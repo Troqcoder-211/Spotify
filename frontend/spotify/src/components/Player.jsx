@@ -1,7 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { assets, songsData } from "../assets/img/assets";
+import { PlayerContext } from "../context/PlayerContext";
 const Player = (props) => {
   console.log(props);
+
+  const { seekBar, seekBg } = useContext(PlayerContext);
+
+  console.log(seekBar + " " + seekBg);
   return (
     <div className="h-[10%] bg-black flex justify-between items-center text-white px-4 ">
       {/* Image and text */}
