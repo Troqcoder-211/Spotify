@@ -5,22 +5,33 @@ const Sidebar = () => {
   //   console.log(library);
   return (
     <div className="w-[25%] h-full p-2 flex-col gap-2 text-white hidden lg:flex">
-      <div className="bg-[#121212] h-[15%] rounded flex flex-col justify-around">
+      <div className="bg-[#121212] h-[15%] rounded flex flex-row justify-around">
         {/* Home Icon */}
-        <div className="flex items-center gap-3 pl-8 cursor-pointer">
-          <img className="w-6" src={assets.home_icon} alt="HomeIcon" />
-          <p className="fonr-bold">Home</p>
+        <div className="flex  items-center gap-3 pl-8 cursor-pointer ">
+          <div className="w-12 h-12 rounded-full bg-[#1f1f1f] hover:bg-gray-500 flex items-center justify-center hover:w-12.5 hover:h-12.5 duration-300">
+            <img
+              className="w-6 text-white cursor-pointer"
+              src={assets.home_icon}
+              alt="HomeIcon"
+            />
+          </div>
         </div>
 
         {/* Search Icon */}
         <div className="flex items-center gap-3 pl-8 cursor-pointer">
-          <img
-            className="w-6"
-            src={assets.search_icon}
-            alt="
+          <div className=" flex relative  items-center  w-68 bg-[#201f1f] h-12 rounded-full">
+            <img
+              className="w-6  cursor-pointer absolute translate-x-2"
+              src={assets.search_icon}
+              alt="
           SeacrhIcon"
-          />
-          <p className="fonr-bold">Seach</p>
+            />
+            <input
+              className="bg-[#1f1f1f] w-full h-full rounded-full pl-8 focus:outline-none"
+              type="text"
+              placeholder="Bạn muốn phát nội dung gì?"
+            ></input>
+          </div>
         </div>
       </div>
 

@@ -3,6 +3,16 @@ import { songsData } from "../assets/img/assets";
 
 export const PlayerContext = createContext();
 
+/*************  ✨ Codeium Command ⭐  *************/
+/**
+ * A context provider for the player component. It provides
+ * the state and actions of the player to the children components.
+ *
+ * @param {object} props
+ * @param {object} props.children
+ * @returns {JSX.Element}
+ */
+/******  0d0dc6ab-3472-4e1a-adf4-65f02cd2213b  *******/
 const PlayerContextProvider = (props) => {
   const audioRef = useRef();
   const seekBg = useRef();
