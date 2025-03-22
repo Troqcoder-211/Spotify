@@ -1,4 +1,5 @@
-# React + Vite
+<h1 align="center">Frontend</h1>
+# React + Vite :
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
@@ -24,5 +25,5 @@ https://www.figma.com/design/b2CBCIwI4usZefJkuig1rB/Spotify-Web-UI-(Community)?n
 
 - cd frontend
 - cd spotify
-- npm i node
+  `npm install node`
 - npm run dev
