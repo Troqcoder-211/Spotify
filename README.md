@@ -1,6 +1,8 @@
 <h1 align="center">Frontend</h1>
 
-# React + Vite
+# React + Vite : ⚛️
+
+## ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 
 # About
 
@@ -20,7 +22,9 @@ https://www.figma.com/design/b2CBCIwI4usZefJkuig1rB/Spotify-Web-UI-(Community)?n
 
 <h1 align="center">Backend</h1>
 
-# Django (Framework support Python)
+# Django (Framework support Python) : ⚡
+
+## ![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white)
 
 # About
 
@@ -34,26 +38,24 @@ https://www.figma.com/design/b2CBCIwI4usZefJkuig1rB/Spotify-Web-UI-(Community)?n
 
 ## NodeJs download link https://nodejs.org/en.
 
-## When nodejs is installed successfully
-
-## Open the terminal of the folder you need to clone the code
+## When nodejs is installed successfully, open the terminal of the folder you need to clone the code
 
 - " git clone https://github.com/Troqcoder-211/Spotify.git "
 
 ## After cloning the code, you execute the command.
 
 ```
- cd frontend
+cd frontend
 ```
 
 ```
- cd spotify
+cd spotify
 ```
 
 ```
-  npm install node
+npm install node
 ```
 
 ```
-  npm run dev
+npm run dev
 ```
