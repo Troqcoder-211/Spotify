@@ -1,10 +1,12 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { CiMenuBurger } from "react-icons/ci";
+import { AiOutlineSearch } from "react-icons/ai";
+import { LuLibrary } from "react-icons/lu";
 
-import { faHouse } from "@fortawesome/free-solid-svg-icons";
-
-const Icon = () => {
-  return <FontAwesomeIcon icon={faHouse} />;
+const assetsIcon = {
+  CiMenuBurger,
+  AiOutlineSearch,
+  LuLibrary,
 };
 
-export default { Icon };
+export default assetsIcon;
