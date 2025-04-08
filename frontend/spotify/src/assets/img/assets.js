@@ -42,6 +42,8 @@ import song1 from "../audio/song1.mp3";
 import song2 from "../audio/song2.mp3";
 import song3 from "../audio/song3.mp3";
 
+import sontung from "./../img/sontungmtp.jpg";
+
 export const assets = {
   bell_icon,
   home_icon,
@@ -67,6 +69,7 @@ export const assets = {
   arrow_right,
   spotify_logo,
   clock_icon,
+  sontung,
 };
 
 export const albumsData = [
