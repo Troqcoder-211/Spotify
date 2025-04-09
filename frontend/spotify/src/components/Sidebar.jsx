@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 
 import LikedSongsItem from "./LikedSongsItem";
-import FolderMusic from "./FolderMusic";
-import AlbumLibrary from "./AlbumLibrary";
+import FolderMusic from "./FolderMusicItem";
+import AlbumLibrary from "./AlbumLibraryItem";
+import ArtisLibraryItem from "./ArtisLibraryItem";
 
 import { assets } from "../assets/img/assets";
 import { AiOutlineSearch } from "react-icons/ai";
 import { LuLibrary } from "react-icons/lu";
 import { IoMdMenu } from "react-icons/io";
+import { PiMusicNotesPlus } from "react-icons/pi";
+import { AiOutlineFolder } from "react-icons/ai";
 
 const Sidebar = () => {
   //   console.log(library);
@@ -51,9 +54,16 @@ const Sidebar = () => {
     },
   ]);
 
+  const [createFolder, setCreateFolder] = useState(false);
+
+  const handleCreateFolder = () => {
+    setCreateFolder(!createFolder);
+  };
+
   console.log(playlist + setPlaylist);
   console.log(music + setMusic);
   console.log(album + setAlbum);
+  console.log(createFolder + setCreateFolder);
 
   return (
     <div className="w-[25%]  h-full p-2 flex-col gap-2 text-white hidden lg:flex ">
@@ -80,7 +90,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className="bg-[#121212] h-[95%] rounded">
+      <div className="bg-[#121212] h-[95%] rounded relative">
         <div className="p-4 flex items-center justify-between">
           {/* Your Library */}
           <div className="flex items-center gap-3">
@@ -91,19 +101,63 @@ const Sidebar = () => {
           </div>
           {/*  Arrow and Plus */}
           <div className="flex items-center gap-3 ">
-            <div className="flex items-center gap-1 bg-[#1f1f1f] px-4 py-1.5 rounded-full hover:bg-[#2a2a2a]">
-              <img className="w-5" src={assets.plus_icon} alt="ArrowIcon" />
+            <button
+              onClick={handleCreateFolder}
+              className="flex items-center gap-1 bg-[#1f1f1f] px-4 py-1.5 rounded-full hover:bg-[#2a2a2a]"
+            >
+              <img
+                className={`w-5 ${createFolder && "rotate-45 duration-300"}  ${
+                  !createFolder && "rotate-[-45] duration-300"
+                } cursor-pointer`}
+                src={assets.plus_icon}
+                alt="ArrowIcon"
+              />
               <p className="text-white">Tạo</p>
-            </div>
-            <div className="flex  items-center gap-1 bg-[#1f1f1f] px-4 py-1.5 rounded-full hover:bg-[#2a2a2a]">
+            </button>
+            {/* <div className="flex  items-center gap-1 bg-[#1f1f1f] px-4 py-1.5 rounded-full hover:bg-[#2a2a2a]">
               <img
                 className="w-5 h-5 cursor-pointer"
                 src={assets.arrow_icon}
                 alt="ArrowIcon"
               />
-            </div>
+            </div> */}
           </div>
         </div>
+
+        {/* Create Playlist Folder */}
+        {createFolder && (
+          <div className="absolute translate-x-[70%] -translate-y-1/16">
+            <div className="w-[348px] h-[140px] bg-[#282828] gap-2 p-2 rounded-xl">
+              {/* Item choice */}
+              <div className="flex gap-2  items-center justify-start hover:bg-[#222222] hover:rounded-2xl p-2 ">
+                <div className="bg-[#6a6a6a] w-[48px] h-[48px] flex items-center justify-center rounded-full">
+                  <PiMusicNotesPlus className="w-8 h-8 hover:text-green-500" />
+                </div>
+                <div>
+                  <p className="text-[20px]">Playlist</p>
+                  <p className="text-[12px] text-[#b3b3b3]">
+                    Tạo danh sách phát gồm bài hát hoặc tập
+                  </p>
+                </div>
+              </div>
+
+              <hr style={{ backgroundColor: "hsla(0, 0%, 100%, .1)" }}></hr>
+
+              {/* Item choice */}
+              <div className="flex gap-2 items-center justify-start hover:bg-[#222222] hover:rounded-2xl p-2 ">
+                <div className="bg-[#6a6a6a] w-[48px] h-[48px] flex items-center justify-center rounded-full ">
+                  <AiOutlineFolder className="w-8 h-8 hover:text-green-500  " />
+                </div>
+                <div>
+                  <p className="text-[20px]">Thư mục</p>
+                  <p className="text-[12px] text-[#b3b3b3]">
+                    Sắp xếp danh sách phát của bạn
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {playlist ? (
           <>
@@ -143,9 +197,16 @@ const Sidebar = () => {
         </div> */}
 
         <div className="flex items-center justify-between">
-          <div className="mr-4 p-2 flex items-center justify-between hover:rounded-full hover:bg-[#2a2a2a]">
+          <button
+            onClick={() => {}}
+            className="mr-4 p-2 flex items-center justify-between hover:rounded-full hover:bg-[#2a2a2a]"
+          >
             <AiOutlineSearch className="w-6 h-6" />
-          </div>
+            <input
+              className="bg-transparent outline-none text-white text-[10px]"
+              placeholder=" Tìm kiếm trong thư viện"
+            />
+          </button>
           <div className="p-4 gap-2 flex items-center justify-center text-[#656565] hover:text-white hover:transition-transform hover:duration-300 hover:scale-105 cursor-pointer">
             <p className="font-semibold ">Gần đây</p>
             <IoMdMenu className=" w-6 h-6" />
@@ -160,6 +221,8 @@ const Sidebar = () => {
             {album.map((album, index) => (
               <AlbumLibrary props={album} key={index} />
             ))}
+
+            <ArtisLibraryItem />
           </div>
         </div>
       </div>
