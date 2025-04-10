@@ -1,13 +1,35 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 export default function Modal({ isAuthenticated }) {
 	const [isOpen, setIsOpen] = useState(true);
+	const modalRef = useRef(null); // Tham chiếu đến modal
 	const navigate = useNavigate();
+
+	// Hàm kiểm tra click ngoài modal
+	const handleClickOutside = (e) => {
+		if (modalRef.current && !modalRef.current.contains(e.target)) {
+			setIsOpen(false); // Nếu click ngoài modal, ẩn modal
+		}
+	};
+
+	// Lắng nghe sự kiện click khi component mount và dọn dẹp khi component unmount
+	useEffect(() => {
+		document.addEventListener('mousedown', handleClickOutside);
+
+		// Cleanup listener khi component unmount
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, []);
 
 	return (
 		isOpen && (
-			<div className='fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.4)] opacity-0.3 bg-opacity-50'>
-				<div className='bg-gray-900 p-6 rounded-lg shadow-lg max-w-lg w-full text-white  relative'>
+			<div className='fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.4)] bg-opacity-50'>
+				<div
+					ref={modalRef} // Gán ref cho modal
+					className='bg-gray-900 p-6 rounded-lg shadow-lg max-w-lg w-full text-white relative'
+				>
 					<div className='flex flex-col items-center'>
 						<img
 							src='https://cdn2.tuoitre.vn/zoom/700_700/471584752817336320/2024/11/25/hieuthuhai-17325007908741114459723-33-0-748-1366-crop-17325008883382060585225.jpg'

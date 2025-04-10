@@ -1,4 +1,3 @@
-// src/app/store.js
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../features/auth/authSlice';
 
@@ -12,12 +11,13 @@ import {
 	PURGE,
 	REGISTER,
 } from 'redux-persist';
-import storageSession from 'redux-persist/lib/storage/session';
+import storage from 'redux-persist/lib/storage'; // Sử dụng localStorage thay vì sessionStorage
 
 const persistConfig = {
-	key: 'auth', // 👈 key này phải khớp với tên reducer bạn muốn persist
-	storage: storageSession,
+	key: 'auth', // key này phải khớp với tên reducer bạn muốn persist
+	storage: storage, // 👈 Dùng localStorage ở đây
 };
+
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 
 export const store = configureStore({
@@ -31,4 +31,5 @@ export const store = configureStore({
 			},
 		}),
 });
+
 export const persistor = persistStore(store);

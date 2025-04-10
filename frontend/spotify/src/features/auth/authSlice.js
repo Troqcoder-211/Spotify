@@ -42,13 +42,13 @@ const authSlice = createSlice({
 			})
 			.addCase(loginUser.fulfilled, (state, action) => {
 				state.loading = false;
-				state.user = action.payload.user;
-				state.token = action.payload.token;
+				state.user = action.payload.data.user;
+				state.token = action.payload.data.access;
 				state.isAuthenticated = true;
 			})
 			.addCase(loginUser.rejected, (state, action) => {
 				state.loading = false;
-				state.error = action.payload;
+				state.error = action.payload.data;
 			});
 	},
 });
