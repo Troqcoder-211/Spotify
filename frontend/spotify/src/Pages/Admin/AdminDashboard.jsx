@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaMusic, FaCompactDisc } from "react-icons/fa";
 import AddSongForm from "./components/AddSongForm";
+import AddAlbumForm from "./components/AddAlbumForm";
 
 const AdminDashboard = () => {
   // Dữ liệu thống kê (dummy data)
@@ -8,6 +9,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("songs"); // tab đang được chọn
 
   const [showAddSongForm, setShowAddSongForm] = useState(false);
+  const [showAddAlbumForm, setShowAddAlbumForm] = useState(false);
 
   const stats = [
     { label: "Total Songs", value: 14, icon: "🎵" },
@@ -58,7 +60,16 @@ const AdminDashboard = () => {
               onClose={() => setShowAddSongForm(false)}
             />
           </div>
-        )}{" "}
+        )}
+        {showAddAlbumForm && (
+          <div>
+            <div
+              className="fixed inset-0 bg-black opacity-50"
+              onClick={() => setShowAddAlbumForm(false)}
+            ></div>
+            <AddAlbumForm onClose={() => setShowAddAlbumForm(false)} />
+          </div>
+        )}
         {/* Tiêu đề trang */}
         <h1 className="text-3xl font-bold">Music Manager</h1>
         <p className="text-gray-400 mb-8">Manage your music catalog</p>
@@ -78,37 +89,39 @@ const AdminDashboard = () => {
           ))}
         </div>
         {/* Song and album section */}
-        <div class="w-[16%]">
-          <div className="flex bg-g[#2a2a2a] border border-gray-700 rounded-md p-1 mb-4">
-            {/* Nền xám đậm, bo tròn, padding nhỏ */}
-
-            <button
-              onClick={() => setActiveTab("songs")}
-              className={`flex items-center  px-4 py-2 rounded-md mr-1
+        {/* <div class="w-[16%]"> */}
+        <div className="flex bg-g[#2a2a2a] border border-gray-700 rounded-md p-1 mb-4 w-[240px]">
+          {/* Nền xám đậm, bo tròn, padding nhỏ */}
+          <button
+            onClick={() => setActiveTab("songs")}
+            className={`flex items-center  px-4 py-2 rounded-md  w-[120px]
             ${activeTab === "songs" ? "bg-gray-700 text-white" : ""}`}
-            >
-              {/* Nút Songs */}
-              <FaMusic className="mr-2" /> {/* Icon nốt nhạc */}
-              Songs
-            </button>
-            <button
-              onClick={() => setActiveTab("albums")}
-              className={`flex items-center  px-4 py-2 rounded-md mr-1
+          >
+            {/* Nút Songs */}
+            <FaMusic className="mr-2" /> {/* Icon nốt nhạc */}
+            Songs
+          </button>
+          <button
+            onClick={() => setActiveTab("albums")}
+            className={`flex items-center  px-4 py-2 rounded-md w-[120px]
             ${activeTab === "albums" ? "bg-gray-700 text-white" : ""}`}
-            >
-              {/* Nút Albums */}
-              <FaCompactDisc className="mr-2" /> {/* Icon đĩa CD */}
-              Albums
-            </button>
-          </div>
+          >
+            {/* Nút Albums */}
+            <FaCompactDisc className="mr-2" /> {/* Icon đĩa CD */}
+            Albums
+          </button>
         </div>
+        {/* </div> */}
         {/* Khu vực quản lý bài hát */}
         <div className="bg-[#2a2a2a] p-4 rounded-lg shadow">
           {activeTab === "albums" && (
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">🎶 Albums Library</h2>
-                <button className="bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400">
+                <button
+                  onClick={() => setShowAddAlbumForm(!showAddAlbumForm)}
+                  className="bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400"
+                >
                   + Add Albums
                 </button>
               </div>
