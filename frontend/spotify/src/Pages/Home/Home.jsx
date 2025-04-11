@@ -10,6 +10,7 @@ const Home = () => {
   const { audioRef, track } = useContext(PlayerContext);
 
   const [isLogin, setIsLogin] = useState(false);
+  console.log(isLogin, setIsLogin);
   return (
     <>
       <div className="box-border">
