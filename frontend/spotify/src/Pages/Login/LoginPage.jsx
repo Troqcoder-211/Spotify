@@ -61,7 +61,12 @@ export default function LoginPage() {
         >
           {loading ? "Đang đăng nhập..." : "Đăng nhập"}
         </button>
-        {!error && <p style={{ color: "red" }}>Đăng nhập thất bại</p>}
+
+        {!error && (
+          <p className="text-sm text-center" style={{ color: "red" }}>
+            Đăng nhập thất bại
+          </p>
+        )}
 
         <p className="text-gray-400 text-sm text-center">
           Chưa có tài khoản?{" "}
