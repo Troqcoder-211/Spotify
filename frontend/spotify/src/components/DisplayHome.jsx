@@ -20,6 +20,7 @@ const DisplayHome = () => {
   return (
     <>
       <Navbar />
+
       {/* Featured Charts */}
       <div className="mb-4">
         <h1 className="my-5 dont-bold text-2xl">Featured Charts</h1>

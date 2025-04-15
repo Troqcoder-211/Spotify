@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { assets } from "../assets/img/assets";
 import { useNavigate } from "react-router-dom";
+import { BsMessenger } from "react-icons/bs";
 const Navbar = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(false);
@@ -24,7 +25,10 @@ const Navbar = () => {
           />
         </div>
         <div className="flex items-center gap-4">
-          <p className="bg-white text-black text-[15px] px-4 py-1 rounded-2xl hidden md:block cursor-pointer">
+          <p
+            onClick={() => navigate("/premium")}
+            className="bg-white text-black text-[15px] px-4 py-1 rounded-2xl hidden md:block cursor-pointer"
+          >
             Explore Premium
           </p>
           {/* <p className="bg-black py-1 px-3 rounded-2xl text-[15px] cursor-pointer ">
@@ -44,16 +48,10 @@ const Navbar = () => {
               </button>
             </div>
           )}
+          <div onClick={() => navigate(`/chat`)}>
+            <BsMessenger className="w-6 h-6 hover:text-gray-300 hover:transform hover:scale-105 cursor-pointer" />
+          </div>
         </div>
-      </div>
-      <div className="flex items-center gap-2 mt-4">
-        {/* <p className="bg-white text-black px-4 py-1 rounded-2xl cursor-pointer">
-          All
-        </p> */}
-        <p className="bg-black  px-4 py-1 rounded-2xl cursor-pointer">Music</p>
-        {/* <p className="bg-black  px-4 py-1 rounded-2xl cursor-pointer">
-          Podcasts
-        </p> */}
       </div>
     </>
   );
