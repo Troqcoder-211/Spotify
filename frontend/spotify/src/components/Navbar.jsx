@@ -69,10 +69,16 @@ const Navbar = () => {
             </p>
           ) : (
             <div className="flex space-x-2  p-2 rounded-lg">
-              <button className="text-gray-500 font-bold px-4 py-2 hover:transform hover:scale-105">
+              <button
+                onClick={() => navigate("/register")}
+                className="text-gray-500 font-bold px-4 py-2 hover:transform hover:scale-105"
+              >
                 Đăng ký
               </button>
-              <button className="bg-white text-black font-bold px-4 py-2 rounded-full hover:transform hover:scale-105">
+              <button
+                onClick={() => navigate("/login")}
+                className="bg-white text-black font-bold px-4 py-2 rounded-full hover:transform hover:scale-105"
+              >
                 Đăng nhập
               </button>
             </div>
