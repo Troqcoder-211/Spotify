@@ -5,6 +5,7 @@ import Display from "../../components/Display";
 import { PlayerContext } from "../../context/PlayerContext";
 import Modal from "../../components/Modal";
 import SpotifyBanner from "../../components/SpotofyBanner";
+import FriendListeningSidebar from "../../components/FriendListeningSideBar";
 
 const Home = () => {
   const { audioRef, track } = useContext(PlayerContext);
@@ -18,6 +19,7 @@ const Home = () => {
           <div className="h-[90%] flex">
             <Sidebar />
             <Display />
+            <FriendListeningSidebar />
           </div>
           {isLogin ? (
             <>
