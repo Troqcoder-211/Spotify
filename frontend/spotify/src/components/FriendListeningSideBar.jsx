@@ -2,128 +2,129 @@ import React from "react";
 import { UserIcon, Headphones } from "lucide-react";
 import UserStatusCard from "./UserStatusCard";
 const FriendListeningSidebar = () => {
-  const userList = [
-    {
-      avatarUrl: "",
-      displayName: "As a Programmer null",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/100", // demo
-      displayName: "Jane Doe",
-      status: "Online",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-    {
-      avatarUrl: "https://i.pravatar.cc/101", // demo
-      displayName: "John Smith",
-      status: "Offline",
-    },
-  ];
+  const userList = [];
+  // const userList = [
+  //   {
+  //     avatarUrl: "",
+  //     displayName: "As a Programmer null",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/100", // demo
+  //     displayName: "Jane Doe",
+  //     status: "Online",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  //   {
+  //     avatarUrl: "https://i.pravatar.cc/101", // demo
+  //     displayName: "John Smith",
+  //     status: "Offline",
+  //   },
+  // ];
   return (
     <div className="bg-zinc-900 text-white w-[30%] h-full rounded-lg p-4 flex flex-col overflow-auto">
       {/* Header */}
