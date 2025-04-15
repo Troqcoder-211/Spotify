@@ -24,6 +24,7 @@ function App() {
 			<Route path='*' element={<div>404 NOT FOUND</div>} />
 		</Routes>
 	);
+
 }
 
 export default App;
