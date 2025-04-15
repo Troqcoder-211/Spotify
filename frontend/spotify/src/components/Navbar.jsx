@@ -1,12 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { assets } from "../assets/img/assets";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../features/auth/authSlice";
 import { BsMessenger } from "react-icons/bs";
 const Navbar = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(false);
-  console.log(isLogin, setIsLogin);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+  const dispatch = useDispatch();
+  const dropdownRef = useRef(null); // Tạo ref cho dropdown
+  const handleLogout = () => {
+    // Xử lý đăng xuất ở đây
+    // Xóa thông tin khỏi Redux store
+    dispatch(logout());
+
+    // Xóa thông tin khỏi localStorage hoặc sessionStorage
+    localStorage.removeItem("persist:auth"); // hoặc sessionStorage.removeItem('persist:auth')
+
+    // Redirect về trang login hoặc trang chính
+    navigate("/login"); // Dùng react-router-dom để chuyển hướng
+  };
+
+  // Hàm để đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false); // Đóng dropdown khi click ngoài
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside); // Lắng nghe sự kiện click
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside); // Dọn dẹp sự kiện khi component bị hủy
+    };
+  }, []);
   return (
     <>
       <div className="w-full flex justify-between items-center font-semibold ">
@@ -25,10 +57,7 @@ const Navbar = () => {
           />
         </div>
         <div className="flex items-center gap-4">
-          <p
-            onClick={() => navigate("/premium")}
-            className="bg-white text-black text-[15px] px-4 py-1 rounded-2xl hidden md:block cursor-pointer"
-          >
+          <p className="bg-white text-black text-[15px] px-4 py-1 rounded-2xl hidden md:block cursor-pointer">
             Explore Premium
           </p>
           {/* <p className="bg-black py-1 px-3 rounded-2xl text-[15px] cursor-pointer ">
@@ -40,16 +69,10 @@ const Navbar = () => {
             </p>
           ) : (
             <div className="flex space-x-2  p-2 rounded-lg">
-              <button
-                onClick={() => navigate("/register")}
-                className="text-gray-500 font-bold px-4 py-2 hover:transform hover:scale-105"
-              >
+              <button className="text-gray-500 font-bold px-4 py-2 hover:transform hover:scale-105">
                 Đăng ký
               </button>
-              <button
-                onClick={() => navigate("/login")}
-                className="bg-white text-black font-bold px-4 py-2 rounded-full hover:transform hover:scale-105"
-              >
+              <button className="bg-white text-black font-bold px-4 py-2 rounded-full hover:transform hover:scale-105">
                 Đăng nhập
               </button>
             </div>

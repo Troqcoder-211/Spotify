@@ -1,8 +1,6 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#292929]">
       <div className="bg-gray-900 text-white p-8 rounded-lg shadow-lg w-96">
@@ -34,12 +32,9 @@ export default function RegisterPage() {
         </button>
         <p className="text-gray-400 text-sm text-center">
           Đã có tài khoản?{" "}
-          <button
-            onClick={() => navigate("/login")}
-            className="hover:text-green-400 text-white"
-          >
+          <a href="#" className="hover:text-green-400 text-white">
             Đăng nhập tại đây
-          </button>
+          </a>
         </p>
       </div>
     </div>
