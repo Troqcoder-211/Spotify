@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import LikedSongsItem from "./LikedSongsItem";
 import FolderMusic from "./FolderMusicItem";
@@ -60,19 +61,18 @@ const Sidebar = () => {
     setCreateFolder(!createFolder);
   };
 
-  console.log(playlist + setPlaylist);
-  console.log(music + setMusic);
-  console.log(album + setAlbum);
-  console.log(createFolder + setCreateFolder);
-
+  const navigate = useNavigate();
   return (
     <div className="w-[25%]  h-full p-2 flex-col gap-2 text-white hidden lg:flex ">
       <div className="bg-[#121212] h-[10%] rounded flex items-center justify-center">
         {/* Home Icon */}
-        <div className="flex  items-center gap-3 pl-8 cursor-pointer mx-2">
+        <div
+          onClick={() => navigate("/")}
+          className="flex  items-center gap-3 pl-8 cursor-pointer mx-2 "
+        >
           <div className="w-12 h-12 rounded-full bg-[#1f1f1f] hover:bg-[#2a2a2a] flex items-center justify-center duration-300">
             <img
-              className="w-6 text-white cursor-pointer"
+              className="w-6 text-white cursor-pointer "
               src={assets.home_icon}
               alt="HomeIcon"
             />
@@ -80,7 +80,7 @@ const Sidebar = () => {
         </div>
         {/* Search Icon */}
 
-        <div className=" relative hidden sm:block ">
+        <div className=" relative hidden sm:block">
           <AiOutlineSearch className="absolute text-[20px] top-[16px] left-[10px] text-gray-500" />
           <input
             className="bg-[#F0F2F5] w-full h-12 dark:bg-[#333334] p-2 rounded-full pl-9 outline-none placeholder:text-white"

@@ -3,6 +3,8 @@ import DisplayHome from "./DisplayHome";
 import { Routes, Route, useLocation } from "react-router-dom";
 import DisplayAlbum from "./DisplayAlbum";
 import { albumsData } from "../assets/img/assets";
+import ChatPage from "../Pages/Chat/ChatPage";
+import PremiumOfferSection from "./PremiumOfferSection";
 
 const Display = () => {
   const displayRef = useRef(null);
@@ -27,6 +29,8 @@ const Display = () => {
       <Routes>
         <Route path="/" element={<DisplayHome />} />
         <Route path="/album/:id" element={<DisplayAlbum />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/premium" element={<PremiumOfferSection />} />
       </Routes>
     </div>
   );
