@@ -5,6 +5,7 @@ import Home from "./Pages/Home/Home";
 import LoginPage from "./Pages/Login/LoginPage";
 import RegisterPage from "./Pages/Login/RegisterPage";
 import PrivateRoute from "./components/PrivateRoute";
+import NotFoundPage from "./Pages/404/NotFoundPage";
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
       />
 
       {/* Route không tồn tại */}
-      <Route path="*" element={<div>404 NOT FOUND</div>} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
