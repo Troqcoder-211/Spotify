@@ -1,6 +1,7 @@
 import React from 'react';
-
+import { useNavigate } from 'react-router-dom';
 const SpotifyBanner = () => {
+	const navigate = useNavigate();
 	return (
 		<div className='bg-gradient-to-r from-purple-600 to-blue-500 text-white h-[10%] px-4 flex justify-between items-center rounded-lg'>
 			<div>
@@ -10,7 +11,10 @@ const SpotifyBanner = () => {
 					không thường xuyên. Không cần thẻ tín dụng.
 				</p>
 			</div>
-			<button className='curcor-pointer bg-white text-black font-semibold px-6 py-2 rounded-full shadow-md hover:transform hover:scale-105'>
+			<button
+				onClick={() => navigate('/register')}
+				className='cursor-pointer bg-white text-black font-semibold px-6 py-2 rounded-full shadow-md hover:transform hover:scale-105'
+			>
 				Đăng ký miễn phí
 			</button>
 		</div>

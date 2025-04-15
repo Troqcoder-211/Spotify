@@ -9,9 +9,35 @@ export const loginUser = createAsyncThunk(
 			const response = await api.post('/auth/login/', credentials);
 			return response.data;
 		} catch (err) {
-			return rejectWithValue(
-				err.response?.data?.message || 'Đăng nhập thất bại'
-			);
+			return rejectWithValue(err.response?.data);
+		}
+	}
+);
+
+// 🔁 Thunk: Gọi API đăng ký
+export const registerUser = createAsyncThunk(
+	'auth/registerUser',
+	async (userData, { rejectWithValue }) => {
+		try {
+			const response = await api.post('/auth/register/', userData);
+			return response.data;
+		} catch (err) {
+			return rejectWithValue(err.response?.data);
+		}
+	}
+);
+
+export const checkAuth = createAsyncThunk(
+	'auth/checkAuth',
+	async (_, thunkAPI) => {
+		const state = thunkAPI.getState();
+		const token = state.auth?.user?.token;
+
+		if (token) {
+			// giả sử user đã login trước đó
+			return state.auth.user;
+		} else {
+			return thunkAPI.rejectWithValue('No token found');
 		}
 	}
 );
@@ -48,7 +74,34 @@ const authSlice = createSlice({
 			})
 			.addCase(loginUser.rejected, (state, action) => {
 				state.loading = false;
-				state.error = action.payload.data;
+				state.error = action.payload.success;
+			})
+
+			.addCase(registerUser.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
+			.addCase(registerUser.fulfilled, (state) => {
+				state.loading = false;
+			})
+			.addCase(registerUser.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.payload.success;
+			})
+
+			.addCase(checkAuth.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
+			.addCase(checkAuth.fulfilled, (state, action) => {
+				state.loading = false;
+				state.user = action.payload;
+			})
+			.addCase(checkAuth.rejected, (state, action) => {
+				state.status = 'failed';
+				state.error = action.payload.success;
+				state.user = null;
+				state.loading = false;
 			});
 	},
 });
