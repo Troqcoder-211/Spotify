@@ -27,21 +27,6 @@ export const registerUser = createAsyncThunk(
 	}
 );
 
-export const checkAuth = createAsyncThunk(
-	'auth/checkAuth',
-	async (_, thunkAPI) => {
-		const state = thunkAPI.getState();
-		const token = state.auth?.user?.token;
-
-		if (token) {
-			// giả sử user đã login trước đó
-			return state.auth.user;
-		} else {
-			return thunkAPI.rejectWithValue('No token found');
-		}
-	}
-);
-
 const initialState = {
 	user: null,
 	token: null,
@@ -87,21 +72,6 @@ const authSlice = createSlice({
 			.addCase(registerUser.rejected, (state, action) => {
 				state.loading = false;
 				state.error = action.payload.success;
-			})
-
-			.addCase(checkAuth.pending, (state) => {
-				state.loading = true;
-				state.error = null;
-			})
-			.addCase(checkAuth.fulfilled, (state, action) => {
-				state.loading = false;
-				state.user = action.payload;
-			})
-			.addCase(checkAuth.rejected, (state, action) => {
-				state.status = 'failed';
-				state.error = action.payload.success;
-				state.user = null;
-				state.loading = false;
 			});
 	},
 });
