@@ -126,7 +126,7 @@ const Sidebar = () => {
 
         {/* Create Playlist Folder */}
         {createFolder && (
-          <div className="absolute translate-x-[70%] -translate-y-1/16">
+          <div className="absolute translate-x-[50%] -translate-y-1/14 z-50">
             <div className="w-[348px] h-[140px] bg-[#282828] gap-2 p-2 rounded-xl">
               {/* Item choice */}
               <div className="flex gap-2  items-center justify-start hover:bg-[#222222] hover:rounded-2xl p-2 ">

@@ -1,7 +1,7 @@
 import React from "react";
 
 const AlbumLibrary = (props) => {
-  console.log(props);
+  // console.log(props);
   return (
     <div className="flex items-center gap-4 hover:bg-[#2a2a2a] hover:rounded-xl p-2">
       <div className="flex items-center gap-4">
