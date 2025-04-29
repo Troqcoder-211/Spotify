@@ -10,19 +10,22 @@ const api = axios.create({
 	withCredentials: true, // 💥 Cho phép gửi cookie kèm request
 	headers: {
 		'Content-Type': 'application/json',
+
 	},
 });
-
+const token = localStorage.getItem('accessToken');
+console.log('Access token:', token);
 // 🟡 Gắn token tự động (nếu có trong localStorage)
 api.interceptors.request.use(
-	(config) => {
-		const token = localStorage.getItem('token');
-		if (token) {
-			config.headers['Authorization'] = `Bearer ${token}`;
-		}
-		return config;
-	},
-	(error) => Promise.reject(error)
+    (config) => {
+        const token = sessionStorage.getItem('accessToken'); // Sửa ở đây
+        console.log('Access token:', token);
+        if (token && token !== 'null') {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
 );
 // Xử lí refresh token
 let isRefreshing = false;
