@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Player from '../../components/Player';
 import Display from '../../components/Display';
@@ -12,8 +12,6 @@ const Home = () => {
 	const { audioRef, track } = useContext(PlayerContext);
 	const { isAuthenticated } = useSelector((state) => state.auth);
 
-	const [isLogin, setIsLogin] = useState(false);
-	console.log(isLogin, setIsLogin);
 	return (
 		<>
 			<div className='box-border'>
@@ -23,7 +21,7 @@ const Home = () => {
 						<Display />
 						<FriendListeningSidebar />
 					</div>
-					{isLogin ? (
+					{isAuthenticated ? (
 						<>
 							<Player />
 							<audio ref={audioRef} src={track.file} preload='auto'></audio>
