@@ -17,6 +17,8 @@ export default function LoginPage() {
 		dispatch(loginUser({ email, password }));
 	};
 
+	console.log(loading);
+
 	// 👉 Redirect nếu đã đăng nhập
 	useEffect(() => {
 		if (isAuthenticated) {

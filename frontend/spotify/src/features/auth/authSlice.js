@@ -1,38 +1,43 @@
 // src/features/auth/authSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../api/axios';
+import AuthService from '../../services/AuthService';
+import TokenService from '../../services/TokenService';
 // 🔁 Thunk: Gọi API đăng nhập
 export const loginUser = createAsyncThunk(
 	'auth/loginUser',
-	async (credentials, { rejectWithValue }) => {
-		try {
-			const response = await api.post('/auth/login/', credentials);
-			return response.data;
-		} catch (err) {
-			return rejectWithValue(err.response?.data);
+	async (data, thunkAPI) => {
+		const { email, password } = data;
+		const res = await AuthService.login(email, password);
+
+		if (!res.success) {
+			return thunkAPI.rejectWithValue(res.error);
 		}
+		const { access, refresh } = res.data;
+
+		TokenService.setTokens(access, refresh);
+
+		return res.data;
 	}
 );
 
 // 🔁 Thunk: Gọi API đăng ký
 export const registerUser = createAsyncThunk(
 	'auth/registerUser',
-	async (userData, { rejectWithValue }) => {
-		try {
-			const response = await api.post('/auth/register/', userData);
-			return response.data;
-		} catch (err) {
-			return rejectWithValue(err.response?.data);
+	async (userData, thunkAPI) => {
+		const { email, password, username } = userData;
+		const res = await AuthService.register(email, password, username);
+		if (!res.success) {
+			return thunkAPI.rejectWithValue(res.error);
 		}
+		return res.data;
 	}
 );
 
 const initialState = {
 	user: null,
-	token: null,
 	isAuthenticated: false,
 	loading: false,
-	error: null,
+	error: false,
 };
 
 const authSlice = createSlice({
@@ -41,7 +46,6 @@ const authSlice = createSlice({
 	reducers: {
 		logout: (state) => {
 			state.user = null;
-			state.token = null;
 			state.isAuthenticated = false;
 		},
 	},
@@ -49,29 +53,29 @@ const authSlice = createSlice({
 		builder
 			.addCase(loginUser.pending, (state) => {
 				state.loading = true;
-				state.error = null;
+				state.error = false;
 			})
 			.addCase(loginUser.fulfilled, (state, action) => {
 				state.loading = false;
-				state.user = action.payload.data.user;
-				state.token = action.payload.data.access;
+				state.user = action.payload.user;
 				state.isAuthenticated = true;
+				state.error = false;
 			})
-			.addCase(loginUser.rejected, (state, action) => {
+			.addCase(loginUser.rejected, (state) => {
 				state.loading = false;
-				state.error = action.payload.success;
+				state.error = true;
 			})
 
 			.addCase(registerUser.pending, (state) => {
 				state.loading = true;
-				state.error = null;
+				state.error = false;
 			})
 			.addCase(registerUser.fulfilled, (state) => {
 				state.loading = false;
 			})
-			.addCase(registerUser.rejected, (state, action) => {
+			.addCase(registerUser.rejected, (state) => {
 				state.loading = false;
-				state.error = action.payload.success;
+				state.error = true;
 			});
 	},
 });
