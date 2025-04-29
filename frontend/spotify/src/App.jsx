@@ -13,7 +13,7 @@ function App() {
       {/* Route công khai */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/" element={<Home />} />
+      <Route path="/*" element={<Home />} />
 
       {/* Route bảo vệ (chỉ truy cập khi đã đăng nhập) */}
       <Route
