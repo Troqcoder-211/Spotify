@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 export default function Modal() {
   const [isOpen, setIsOpen] = useState(true);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   return (
@@ -18,22 +20,21 @@ export default function Modal() {
             <h2 className="text-2xl font-bold mt-4 text-center">
               Bắt đầu nghe bằng tài khoản Spotify Free
             </h2>
-            <button
-              onClick={() => navigate("/register")}
-              className="bg-green-500 text-white font-semibold px-6 py-2 rounded-full mt-4 hover:tranform hover:scale-105"
-            >
+            <button className="bg-green-500 text-white font-semibold px-6 py-2 rounded-full mt-4 hover:tranform hover:scale-105">
               Đăng ký miễn phí
             </button>
 
-            <p className="text-gray-400 text-sm mt-4">
-              Bạn đã có tài khoản?{" "}
-              <span
-                onClick={() => navigate("/login")}
-                className="text-white font-semibold cursor-pointer hover:text-green-500"
-              >
-                Đăng nhập
-              </span>
-            </p>
+            {!isAuthenticated && (
+              <p className="text-gray-400 text-sm mt-4">
+                Bạn đã có tài khoản?{" "}
+                <span
+                  onClick={() => navigate("/login")}
+                  className="text-white font-semibold cursor-pointer hover:text-green-500"
+                >
+                  Đăng nhập
+                </span>
+              </p>
+            )}
           </div>
           <button
             onClick={() => setIsOpen(false)}

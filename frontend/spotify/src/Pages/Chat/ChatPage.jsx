@@ -112,6 +112,8 @@ const ChatPage = () => {
       imageUrl: "https://i.pravatar.cc/150?img=3",
     },
   ]);
+
+  console.log(setUsers);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);

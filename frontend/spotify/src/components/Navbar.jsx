@@ -2,27 +2,22 @@ import React, { useState, useEffect, useRef } from "react";
 import { assets } from "../assets/img/assets";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../features/auth/authSlice";
 import { BsMessenger } from "react-icons/bs";
+import { logoutUser } from "../features/auth/authSlice";
 const Navbar = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(false);
+  const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-  const dispatch = useDispatch();
   const dropdownRef = useRef(null); // Tạo ref cho dropdown
+
   const handleLogout = () => {
-    // Xử lý đăng xuất ở đây
-    // Xóa thông tin khỏi Redux store
-    dispatch(logout());
-
-    // Xóa thông tin khỏi localStorage hoặc sessionStorage
-    localStorage.removeItem("persist:auth"); // hoặc sessionStorage.removeItem('persist:auth')
-
-    // Redirect về trang login hoặc trang chính
-    navigate("/login"); // Dùng react-router-dom để chuyển hướng
+    dispatch(logoutUser());
+    alert("Đăng xuất thành công");
+    navigate("/login");
+    setDropdownOpen(false);
   };
 
   // Hàm để đóng dropdown khi click ra ngoài
@@ -57,19 +52,41 @@ const Navbar = () => {
           />
         </div>
         <div className="flex items-center gap-4">
-          <p
-            onClick={() => navigate("/premium")}
-            className="bg-white text-black text-[15px] px-4 py-1 rounded-2xl hidden md:block cursor-pointer"
-          >
+          <p className="bg-white text-black text-[15px] px-4 py-1 rounded-2xl hidden md:block cursor-pointer">
             Explore Premium
           </p>
           {/* <p className="bg-black py-1 px-3 rounded-2xl text-[15px] cursor-pointer ">
             Install App
           </p> */}
-          {isLogin ? (
-            <p className="bg-purple-500 text-black w-7 h-7 rounded-full flex items-center justify-center">
-              D
-            </p>
+          {isAuthenticated ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={toggleDropdown}
+                className="bg-purple-500 text-black w-7 h-7 rounded-full flex items-center justify-center"
+              >
+                {user?.full_name?.[0] || "U"}
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20 animate-fade-in-down">
+                  {/* <button
+										onClick={() => {
+											// navigate('/profile');
+											setDropdownOpen(false);
+										}}
+										className='block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 hover:text-purple-700 transition duration-150 rounded-b-lg'
+									>
+										Trang cá nhân
+									</button> */}
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 hover:text-purple-700 transition duration-150 rounded-t-lg"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex space-x-2  p-2 rounded-lg">
               <button

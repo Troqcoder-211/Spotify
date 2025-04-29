@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Player from '../../components/Player';
 import Display from '../../components/Display';
@@ -7,13 +7,25 @@ import Modal from '../../components/Modal';
 import SpotifyBanner from '../../components/SpotofyBanner';
 import FriendListeningSidebar from '../../components/FriendListeningSideBar';
 import { useSelector } from 'react-redux';
+import TrackService from '../../services/TrackService';
 
 const Home = () => {
 	const { audioRef, track } = useContext(PlayerContext);
 	const { isAuthenticated } = useSelector((state) => state.auth);
 
-	const [isLogin, setIsLogin] = useState(false);
-	console.log(isLogin, setIsLogin);
+	const fetchAllTracks = async () => {
+		const res = await TrackService.getAll();
+		if (res.success) {
+			console.log('>>>>>thnah cong', res);
+		} else {
+			console.log('>>>>> loi', res);
+		}
+	};
+
+	useEffect(() => {
+		fetchAllTracks();
+	}, []);
+
 	return (
 		<>
 			<div className='box-border'>
@@ -23,7 +35,7 @@ const Home = () => {
 						<Display />
 						<FriendListeningSidebar />
 					</div>
-					{isLogin ? (
+					{isAuthenticated ? (
 						<>
 							<Player />
 							<audio ref={audioRef} src={track.file} preload='auto'></audio>
