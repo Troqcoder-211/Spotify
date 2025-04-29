@@ -2,19 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
+import { unwrapResult } from '@reduxjs/toolkit'; // để lấy kết quả từ asyncThunk
+
 export default function LoginPage() {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
-	const { loading, error, isAuthenticated } = useSelector(
-		(state) => state.auth
-	);
+	const { loading, isAuthenticated } = useSelector((state) => state.auth);
 
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 
-	const handleLogin = (e) => {
+	const handleLogin = async (e) => {
 		e.preventDefault();
-		dispatch(loginUser({ email, password }));
+		try {
+			const resultAction = await dispatch(loginUser({ email, password }));
+
+			const data = unwrapResult(resultAction);
+
+			// ✅ Hiển thị toast thành công
+			alert(`Xin chào ${data?.user?.fullName || 'người dùng'}!`);
+
+			// 👉 Chuyển hướng nếu cần, ví dụ:
+			navigate('/');
+		} catch (err) {
+			alert(err || 'Đăng nhập thất bại'); // Hiển thị thông báo lỗ
+		}
 	};
 
 	// 👉 Redirect nếu đã đăng nhập
@@ -61,12 +73,6 @@ export default function LoginPage() {
 				>
 					{loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
 				</button>
-
-				{!error && (
-					<p className='text-sm text-center' style={{ color: 'red' }}>
-						Đăng nhập thất bại
-					</p>
-				)}
 
 				<p className='text-gray-400 text-sm text-center'>
 					Chưa có tài khoản?{' '}

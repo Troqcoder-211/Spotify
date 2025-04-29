@@ -33,6 +33,11 @@ export const registerUser = createAsyncThunk(
 	}
 );
 
+export const logoutUser = createAsyncThunk('auth/logoutUser', () => {
+	TokenService.clearTokens();
+	return AuthService.logout();
+});
+
 const initialState = {
 	user: null,
 	isAuthenticated: false,
@@ -76,9 +81,14 @@ const authSlice = createSlice({
 			.addCase(registerUser.rejected, (state) => {
 				state.loading = false;
 				state.error = true;
+			})
+
+			.addCase(logoutUser.fulfilled, (state) => {
+				state.loading = false;
+				state.isAuthenticated = false;
+				state.user = null;
 			});
 	},
 });
 
-export const { logout } = authSlice.actions;
 export default authSlice.reducer;
