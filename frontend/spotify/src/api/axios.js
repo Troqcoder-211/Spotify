@@ -16,8 +16,8 @@ const api = axios.create({
 // 🟡 Gắn token tự động (nếu có trong localStorage)
 api.interceptors.request.use(
 	(config) => {
-		const token = localStorage.getItem('token');
-		if (token) {
+		const token = TokenService.getAccessToken(); // Sửa ở đây
+		if (token && token !== 'null') {
 			config.headers['Authorization'] = `Bearer ${token}`;
 		}
 		return config;
@@ -47,7 +47,7 @@ api.interceptors.response.use(
 		const originalRequest = error.config;
 
 		if (
-			error.response?.status === 403 &&
+			error.response?.status === 401 &&
 			!originalRequest._retry &&
 			TokenService.getRefreshToken()
 		) {
@@ -67,12 +67,13 @@ api.interceptors.response.use(
 			isRefreshing = true;
 
 			try {
-				const response = await axios.post(`${baseURL}/auth/refresh-token`, {
+				const response = await axios.post(`${baseURL}/auth/refresh/`, {
 					refresh: TokenService.getRefreshToken(),
 				});
+				// if(response.success) {}
+				const { access, refresh } = response?.data?.data || {};
 
-				const { access, refresh } = response.data;
-
+				TokenService.clearTokens();
 				TokenService.setTokens(access, refresh);
 				api.defaults.headers.common['Authorization'] = 'Bearer ' + access;
 				processQueue(null, access);

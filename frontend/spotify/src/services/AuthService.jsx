@@ -1,5 +1,6 @@
 import api from '../api/axios';
 import { apiRequest } from '../api/ApiRequest';
+import TokenService from '../services/TokenService';
 
 const AuthService = {
 	login: async (email, password) => {

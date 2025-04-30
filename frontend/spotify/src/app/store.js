@@ -4,7 +4,7 @@ import { persistStore, persistReducer } from 'redux-persist';
 import sessionStorage from 'redux-persist/lib/storage/session'; // Sử dụng localStorage thay vì sessionStorage
 
 const persistConfig = {
-	key: 'root',
+	key: 'auth',
 	storage: sessionStorage, // 👈 Dùng localStorage ở đây
 };
 
