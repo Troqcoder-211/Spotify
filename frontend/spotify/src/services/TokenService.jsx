@@ -4,8 +4,8 @@ const TOKEN_KEYS = {
 };
 
 const TokenService = {
-	// getAccessToken: () => sessionStorage.getItem(TOKEN_KEYS.access),
-	// getRefreshToken: () => sessionStorage.getItem(TOKEN_KEYS.refresh),
+	getAccessToken: () => sessionStorage.getItem(TOKEN_KEYS.access),
+	getRefreshToken: () => sessionStorage.getItem(TOKEN_KEYS.refresh),
 
 	setTokens: (accessToken, refreshToken) => {
 		sessionStorage.setItem(TOKEN_KEYS.access, accessToken);

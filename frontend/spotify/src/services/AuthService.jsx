@@ -5,16 +5,10 @@ import TokenService from '../services/TokenService';
 const AuthService = {
 	login: async (email, password) => {
 		return await apiRequest(() => {
-			return api.post('/auth/login/', { email, password })
-			.then(response => {
-				// Sau khi login thành công, lưu token vào sessionStorage
-				TokenService.setTokens(response.data.access, response.data.refresh);
-				return response;
-			  });
+			return api.post('/auth/login/', { email, password });
 		});
 	},
 	logout: async () => {
-		TokenService.clearTokens();
 		return { success: true };
 	},
 	register: async (email, password, username) => {
