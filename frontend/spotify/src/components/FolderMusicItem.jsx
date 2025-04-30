@@ -1,7 +1,7 @@
 import React from "react";
 
 import { AiOutlineFolder, AiOutlineRight } from "react-icons/ai";
-const FolderMusic = () => {
+const FolderMusic = ({ name }) => {
   return (
     <div className="flex items-center justify-between hover:bg-[#2a2a2a] hover:rounded-xl p-2">
       <div className="flex items-center gap-4">
@@ -10,8 +10,8 @@ const FolderMusic = () => {
         </div>
 
         <div>
-          <h2 className="text-white font-semibold">Thư mục mới</h2>
-          <p className="text-gray-400 text-sm">1 danh sách phát, 1 thư mục</p>
+          <h2 className="text-white font-semibold">{name}</h2>
+          {/* <p className="text-gray-400 text-sm">1 danh sách phát, 1 thư mục</p> */}
         </div>
       </div>
 

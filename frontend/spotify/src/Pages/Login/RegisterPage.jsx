@@ -74,7 +74,11 @@ export default function RegisterPage() {
         >
           {loading ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
         </button>
-        {!error && <p style={{ color: "red" }}>Đăng kí thất bại</p>}
+        {!error && (
+          <p className="text-center" style={{ color: "red" }}>
+            Đăng kí thất bại
+          </p>
+        )}
         <p className="text-gray-400 text-sm text-center">
           Đã có tài khoản?
           <span

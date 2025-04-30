@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 
 import LikedSongsItem from "./LikedSongsItem";
@@ -12,6 +13,8 @@ import { LuLibrary } from "react-icons/lu";
 import { IoMdMenu } from "react-icons/io";
 import { PiMusicNotesPlus } from "react-icons/pi";
 import { AiOutlineFolder } from "react-icons/ai";
+
+import { fetchAllFolder } from "../services/FolderService";
 
 const Sidebar = () => {
   //   console.log(library);
@@ -55,6 +58,47 @@ const Sidebar = () => {
     },
   ]);
 
+  // const folders = [
+  //   {
+  //     name: "Thư mục mới",
+  //     description: "1 danh sách phát, 1 thư mục",
+  //   },
+  //   {
+  //     name: "Nhạc chill",
+  //     description: "3 danh sách phát",
+  //   },
+  //   {
+  //     name: "Workout",
+  //     description: "2 danh sách phát, 1 thư mục con",
+  //   },
+  // ];
+  const [folders, setFolders] = useState([]);
+
+  // useEffect(() => {
+  //   const fetchFolders = async () => {
+  //     try {
+  //       const response = await FolderService.getAllFolders();
+  //       console.log("Folder data:", response); // Kiểm tra dữ liệu trả về
+  //       setFolders(response.data); // Giả sử bạn cần truy cập vào `data` từ phản hồi
+  //     } catch (error) {
+  //       console.error("Không thể lấy danh sách thư mục:", error);
+  //     }
+  //   };
+  
+  //   fetchFolders();
+  // }, []);
+
+  
+  const getAll = async () =>{
+    const res = await fetchAllFolder();
+    console.log(res.data.data)
+    setFolders(res.data.data)
+  }
+  
+  useEffect(()=>{
+    getAll()
+  }, [])
+
   const [createFolder, setCreateFolder] = useState(false);
 
   const handleCreateFolder = () => {
@@ -90,7 +134,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className="bg-[#121212] h-[95%] rounded relative">
+      <div className="bg-[#121212] h-[95%] rounded relative overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-[#121212]">
         <div className="p-4 flex items-center justify-between">
           {/* Your Library */}
           <div className="flex items-center gap-3">
@@ -216,13 +260,21 @@ const Sidebar = () => {
         <div className="flex flex-col items-center ">
           <div className="w-full">
             <LikedSongsItem props={music} />
-            <FolderMusic />
 
-            {album.map((album, index) => (
+            {folders.length === 0 ? (
+              <p>Không có thư mục nào.</p>
+            ) : (
+              folders.map((folder, index) => (
+                <FolderMusic key={index} name={folder.title} />
+              ))
+            )}
+            {/* <FolderMusic /> */}
+
+            {/* {album.map((album, index) => (
               <AlbumLibrary props={album} key={index} />
             ))}
 
-            <ArtisLibraryItem />
+            <ArtisLibraryItem /> */}
           </div>
         </div>
       </div>
