@@ -1,7 +1,11 @@
 import React, { useRef, useState } from "react";
-const AddSongForm = ({ albums = [], onClose }) => {
+import { addTrack } from "../../../features/admin/trackApi";
+import { toast } from "react-toastify";
+
+const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
   const imageInputRef = useRef(null);
   const audioInputRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [files, setFiles] = useState({ image: null, audio: null });
   const [newSong, setNewSong] = useState({
@@ -10,6 +14,45 @@ const AddSongForm = ({ albums = [], onClose }) => {
     duration: "",
     album: "",
   });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      // Kiểm tra các trường bắt buộc
+      if (!newSong.title || !newSong.artist || !files.audio) {
+        toast.error("Vui lòng điền đầy đủ thông tin bắt buộc");
+        setIsLoading(false);
+        return;
+      }
+      // Tự động lấy duration khi chọn file audio
+      if (files.audio) {
+        const audio = new Audio(URL.createObjectURL(files.audio));
+        audio.addEventListener('loadedmetadata', () => {
+          const durationInSeconds = Math.floor(audio.duration);
+          const minutes = Math.floor(durationInSeconds / 60);
+          const seconds = durationInSeconds % 60;
+          const formattedDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          setNewSong(prev => ({...prev, duration: formattedDuration}));
+        });
+      }
+      // Gọi API thêm nhạc
+      await addTrack({
+        ...newSong,
+        image: files.image,
+        audio: files.audio,
+      });
+
+      toast.success("Thêm bài hát thành công!");
+      onSuccess?.();
+      onClose();
+    } catch (error) {
+      toast.error(error.message || "Có lỗi xảy ra khi thêm bài hát");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="bg-gray-500 p-6 rounded-lg space-y-4 py-4 text-white w-[400px] absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
@@ -64,7 +107,7 @@ const AddSongForm = ({ albums = [], onClose }) => {
 
           {/* Audio Upload Button */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Audio File</label>
+            <label className="text-sm font-medium">Audio File *</label>
             <button
               type="button"
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-left"
@@ -78,7 +121,7 @@ const AddSongForm = ({ albums = [], onClose }) => {
 
           {/* Title */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Title</label>
+            <label className="text-sm font-medium">Title *</label>
             <input
               type="text"
               value={newSong.title}
@@ -86,12 +129,13 @@ const AddSongForm = ({ albums = [], onClose }) => {
                 setNewSong((prev) => ({ ...prev, title: e.target.value }))
               }
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded"
+              required
             />
           </div>
 
           {/* Artist */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Artist</label>
+            <label className="text-sm font-medium">Artist *</label>
             <input
               type="text"
               value={newSong.artist}
@@ -99,23 +143,7 @@ const AddSongForm = ({ albums = [], onClose }) => {
                 setNewSong((prev) => ({ ...prev, artist: e.target.value }))
               }
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded"
-            />
-          </div>
-
-          {/* Duration */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Duration (seconds)</label>
-            <input
-              type="number"
-              min="0"
-              value={newSong.duration}
-              onChange={(e) =>
-                setNewSong((prev) => ({
-                  ...prev,
-                  duration: e.target.value || "0",
-                }))
-              }
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded"
+              required
             />
           </div>
 
@@ -143,11 +171,16 @@ const AddSongForm = ({ albums = [], onClose }) => {
             <button
               className="px-4 py-2 border border-zinc-500 rounded text-white hover:bg-zinc-700"
               onClick={() => onClose()}
+              disabled={isLoading}
             >
               Cancel
             </button>
-            <button className="px-4 py-2 rounded text-white bg-violet-500 hover:bg-violet-600">
-              Add Song
+            <button 
+              className="px-4 py-2 rounded text-white bg-violet-500 hover:bg-violet-600 disabled:opacity-50"
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Adding...' : 'Add Song'}
             </button>
           </div>
         </div>

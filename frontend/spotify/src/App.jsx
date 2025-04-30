@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
 
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import Home from "./Pages/Home/Home";
@@ -9,21 +10,35 @@ import NotFoundPage from "./Pages/404/NotFoundPage";
 
 function App() {
   return (
-    <Routes>
-      {/* Route công khai */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/" element={<Home />} />
-
-      {/* Route bảo vệ (chỉ truy cập khi đã đăng nhập) */}
-      <Route
-        path="/admin"
-        element={<PrivateRoute element={<AdminDashboard />} />}
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
       />
+      <Routes>
+        {/* Route công khai */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/" element={<Home />} />
 
-      {/* Route không tồn tại */}
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        {/* Route bảo vệ (chỉ truy cập khi đã đăng nhập) */}
+        <Route
+          path="/admin"
+          element={<PrivateRoute element={<AdminDashboard />} />}
+        />
+
+        {/* Route không tồn tại */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </>
   );
 }
 
