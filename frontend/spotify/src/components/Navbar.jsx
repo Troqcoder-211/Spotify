@@ -34,6 +34,8 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside); // Dọn dẹp sự kiện khi component bị hủy
     };
   }, []);
+
+  
   return (
     <>
       <div className="w-full flex justify-between items-center font-semibold ">
@@ -52,12 +54,14 @@ const Navbar = () => {
           />
         </div>
         <div className="flex items-center gap-4">
-          <p
+          {user?.account_type==='free' && 
+            <p
             onClick={() => navigate("/premium")}
             className="bg-white text-black text-[15px] px-4 py-1 rounded-2xl hidden md:block cursor-pointer"
-          >
+             >
             Explore Premium
-          </p>
+            </p>   
+          }
 
           {isAuthenticated ? (
             <div className="relative" ref={dropdownRef}>

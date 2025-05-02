@@ -6,6 +6,8 @@ import LoginPage from "./Pages/Login/LoginPage";
 import RegisterPage from "./Pages/Login/RegisterPage";
 import PrivateRoute from "./components/PrivateRoute";
 import NotFoundPage from "./Pages/404/NotFoundPage";
+// import PaymentCallback from "./components/PaymentCallback.jsx";
+import PaymentSuccess from "./components/PaymentSuccess.jsx";
 
 function App() {
   return (
@@ -20,6 +22,11 @@ function App() {
         path="/admin"
         element={<PrivateRoute element={<AdminDashboard />} />}
       />
+
+      {/* Route cho trang callback thanh toán */}
+      {/* <Route path="/payment-callback" element={<PaymentCallback />} /> */}
+
+      <Route path="/payment-success" element={<PaymentSuccess />} />
 
       {/* Route không tồn tại */}
       <Route path="*" element={<NotFoundPage />} />
