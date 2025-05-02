@@ -1,26 +1,16 @@
 import { createContext, useEffect, useRef, useState } from 'react';
-import { songsData } from '../assets/img/assets';
+import { useSelector } from 'react-redux';
 
 export const PlayerContext = createContext();
 
-/*************  ✨ Codeium Command ⭐  *************/
-/**
- * A context provider for the player component. It provides
- * the state and actions of the player to the children components.
- *
- * @param {object} props
- * @param {object} props.children
- * @returns {JSX.Element}
- */
-/******  0d0dc6ab-3472-4e1a-adf4-65f02cd2213b  *******/
-
 const PlayerContextProvider = (props) => {
+	const { isAuthenticated } = useSelector((state) => state.auth);
+
 	const audioRef = useRef();
 	const seekBg = useRef();
 	const seekBar = useRef();
 
-	const [track, setTrack] = useState(songsData[1]);
-	// const [track, setTrack] = useState(null);
+	const [track, setTrack] = useState(null);
 	const [playStatus, setPlayStatus] = useState(false);
 	const [time, setTime] = useState({
 		currentTime: {
@@ -33,39 +23,51 @@ const PlayerContextProvider = (props) => {
 		},
 	});
 
+	// Hàm phát nhạc
 	const play = () => {
-		if (audioRef.current) {
+		if (audioRef.current && track) {
 			audioRef.current.play();
 			setPlayStatus(true);
 		}
 	};
 
+	// Hàm dừng nhạc
 	const pause = () => {
-		if (audioRef.current) {
+		if (audioRef.current && track) {
 			audioRef.current.pause();
 			setPlayStatus(false);
 		}
 	};
 
-	const playWithId = (id) => {
-		setTrack(songsData[id]);
+	// Hàm phát bài hát với tên file
+	const playWithFile = (track) => {
+		if (!isAuthenticated) {
+			alert('Hãy đăng nhập để nghe nhạc');
+			return;
+		}
+		setTrack(track); // Chỉ lưu tên file trong track
 		setPlayStatus(true);
+
+		// Đảm bảo rằng audio mới phát với URL đúng
+		if (audioRef.current) {
+			audioRef.current.src = track.file_path;
+			audioRef.current.play();
+		}
 	};
 
+	// Chuyển bài hát trước đó
 	const previous = () => {
-		if (track.id === 0) return;
-		setTrack(songsData[track.id - 1]);
-		setPlayStatus(true);
+		// Cập nhật logic nếu cần thiết
 	};
 
+	// Chuyển bài hát tiếp theo
 	const next = () => {
-		if (track.id === songsData.length - 1) return;
-		setTrack(songsData[track.id + 1]);
-		setPlayStatus(true);
+		// Cập nhật logic nếu cần thiết
 	};
 
+	// Tìm kiếm vị trí trong bài hát
 	const seekSong = (e) => {
-		if (audioRef.current && seekBg.current) {
+		if (audioRef.current && seekBg.current && track) {
 			const offsetX = e.nativeEvent.offsetX;
 			const bgWidth = seekBg.current.offsetWidth;
 			const duration = audioRef.current.duration;
@@ -85,7 +87,7 @@ const PlayerContextProvider = (props) => {
 			const current = audio.currentTime;
 			const duration = audio.duration;
 
-			if (seekBar.current && seekBg.current) {
+			if (seekBar.current && seekBg.current && track) {
 				seekBar.current.style.width = `${(current / duration) * 100}%`;
 			}
 
@@ -110,7 +112,7 @@ const PlayerContextProvider = (props) => {
 
 	// Tự động play khi track thay đổi nếu đang bật trạng thái play
 	useEffect(() => {
-		if (playStatus && audioRef.current) {
+		if (playStatus && audioRef.current && track) {
 			audioRef.current.play();
 		}
 	}, [track]);
@@ -121,7 +123,7 @@ const PlayerContextProvider = (props) => {
 		if (!audio) return;
 
 		audio.onended = () => {
-			next();
+			next(); // Chuyển sang bài tiếp theo khi kết thúc
 		};
 
 		return () => {
@@ -141,14 +143,22 @@ const PlayerContextProvider = (props) => {
 		setTime,
 		play,
 		pause,
-		playWithId,
+		playWithFile,
 		previous,
 		next,
 		seekSong,
 	};
+
 	return (
 		<PlayerContext.Provider value={contextValue}>
 			{props.children}
+			<audio
+				ref={audioRef}
+				src={track?.file}
+				controls
+				hidden
+				preload='metadata'
+			></audio>
 		</PlayerContext.Provider>
 	);
 };

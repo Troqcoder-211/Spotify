@@ -1,7 +1,4 @@
-import React, { useState, useEffect, } from 'react';
-import { useSelector } from 'react-redux';
-
-
+import React, { useState, useEffect } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -17,12 +14,11 @@ import { IoMdMenu } from 'react-icons/io';
 import { PiMusicNotesPlus } from 'react-icons/pi';
 import { AiOutlineFolder } from 'react-icons/ai';
 
-import FolderService from '../services/FolderService';
+import {} from '../services/FolderService';
+import { useSelector } from 'react-redux';
 
 const Sidebar = () => {
-	//   console.log(library);
 	const { isAuthenticated } = useSelector((state) => state.auth);
-
 	const [playlist, setPlaylist] = useState([]);
 	const [music, setMusic] = useState([
 		{
@@ -45,40 +41,9 @@ const Sidebar = () => {
 		},
 	]);
 
-	const [album, setAlbum] = useState([
-		{
-			id: 1,
-			name: 'Album 1',
-			image: assets.album1,
-			desc: 'Album 1',
-			music: music,
-		},
-		{
-			id: 2,
-			name: 'Album 2',
-			image: assets.album2,
-			desc: 'Album 2',
-			music: music,
-		},
-	]);
-
-	// const folders = [
-	//   {
-	//     name: "Thư mục mới",
-	//     description: "1 danh sách phát, 1 thư mục",
-	//   },
-	//   {
-	//     name: "Nhạc chill",
-	//     description: "3 danh sách phát",
-	//   },
-	//   {
-	//     name: "Workout",
-	//     description: "2 danh sách phát, 1 thư mục con",
-	//   },
-	// ];
 	const [folders, setFolders] = useState([]);
 
-	const getAllFolders= async () => {
+	const getAllFolders = async () => {
 		if (!isAuthenticated) return;
 
 		const res = await FolderService.getAllFolders();
@@ -98,7 +63,7 @@ const Sidebar = () => {
 
 	const navigate = useNavigate();
 	return (
-		<div className='w-[25%]  h-full p-2 flex-col gap-2 text-white hidden lg:flex '>
+		<div className='w-[25%]  h-full  flex-col gap-2 text-white hidden lg:flex '>
 			<div className='bg-[#121212] h-[10%] rounded flex items-center justify-center'>
 				{/* Home Icon */}
 				<div

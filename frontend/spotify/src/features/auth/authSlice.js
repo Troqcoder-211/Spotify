@@ -51,9 +51,9 @@ const authSlice = createSlice({
 	reducers: {
 		setAccountType: (state, action) => {
 			if (state.user) {
-			  state.user.account_type = action.payload;
+				state.user.account_type = action.payload;
 			}
-		  },
+		},
 	},
 	extraReducers: (builder) => {
 		builder
