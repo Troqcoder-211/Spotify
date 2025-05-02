@@ -1,61 +1,107 @@
-import React, { useRef, useState } from "react";
-import { addTrack } from "../../../features/admin/trackApi";
-import { toast } from "react-toastify";
+import React, { useRef, useState, useEffect } from "react";
+import TrackService from "../../../services/TrackService";
+import ArtistService from "../../../services/ArtistService";
 
 const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
   const imageInputRef = useRef(null);
   const audioInputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [artistSuggestions, setArtistSuggestions] = useState([]);
 
   const [files, setFiles] = useState({ image: null, audio: null });
   const [newSong, setNewSong] = useState({
     title: "",
     artist: "",
+    artist_id: "",
     duration: "",
     album: "",
   });
 
+  const handleArtistSearch = async (searchTerm) => {
+    if (!searchTerm.trim()) {
+      setArtistSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await ArtistService.search(searchTerm);
+      if (response.success) {
+        setArtistSuggestions(response.data);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm nghệ sĩ:", error);
+      setArtistSuggestions([]);
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (newSong.artist) {
+        handleArtistSearch(newSong.artist);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [newSong.artist]);
+
+  const handleArtistSelect = (artist) => {
+    setNewSong(prev => ({
+      ...prev,
+      artist: artist.name,
+      artist_id: artist._id
+    }));
+    setArtistSuggestions([]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       // Kiểm tra các trường bắt buộc
-      if (!newSong.title || !newSong.artist || !files.audio) {
-        toast.error("Vui lòng điền đầy đủ thông tin bắt buộc");
+      if (!newSong.title || !files.audio || !newSong.artist_id) {
+        console.log( newSong.artist_id);
+        alert("Vui lòng điền đầy đủ thông tin bắt buộc");
         setIsLoading(false);
         return;
       }
-      // Tự động lấy duration khi chọn file audio
-      if (files.audio) {
+
+      // Lấy duration từ file audio
+      const durationInSeconds = await new Promise((resolve) => {
         const audio = new Audio(URL.createObjectURL(files.audio));
         audio.addEventListener('loadedmetadata', () => {
-          const durationInSeconds = Math.floor(audio.duration);
-          const minutes = Math.floor(durationInSeconds / 60);
-          const seconds = durationInSeconds % 60;
-          const formattedDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-          setNewSong(prev => ({...prev, duration: formattedDuration}));
+          resolve(Math.floor(audio.duration));
         });
-      }
-      // Gọi API thêm nhạc
-      await addTrack({
-        ...newSong,
-        image: files.image,
-        audio: files.audio,
       });
 
-      toast.success("Thêm bài hát thành công!");
+      // Gọi API thêm nhạc
+      const response = await TrackService.add({
+        title: newSong.title,
+        duration: durationInSeconds,
+        file_path: files.audio,
+        album: newSong.album === "none" ? "none" : newSong.album,
+        artist_id: newSong.artist_id,
+        track_number: null,
+        popularity: 0,
+        preview_url: '',
+        is_active: true
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || "Response lỗi");
+      }
+
+      alert(`Thêm bài hát ${newSong.title} thành công!`);
       onSuccess?.();
       onClose();
     } catch (error) {
-      toast.error(error.message || "Có lỗi xảy ra khi thêm bài hát");
+      alert(error.message || "Có lỗi xảy ra khi thêm bài hát");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-gray-500 p-6 rounded-lg space-y-4 py-4 text-white w-[400px] absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+    <div className="bg-gray-500 p-6 rounded-lg space-y-4 py-4 text-white w-[400px] absolute top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
       <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
         <div className="bg-zinc-900 border border-zinc-700 w-[90%] max-w-md rounded-lg p-6 space-y-5 relative text-white">
           {/* Hidden Inputs */}
@@ -114,7 +160,7 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
               onClick={() => audioInputRef.current?.click()}
             >
               {files.audio
-                ? files.audio.name.slice(0, 20)
+                ? files.audio.name
                 : "Choose Audio File"}
             </button>
           </div>
@@ -134,17 +180,31 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
           </div>
 
           {/* Artist */}
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <label className="text-sm font-medium">Artist *</label>
             <input
               type="text"
               value={newSong.artist}
-              onChange={(e) =>
-                setNewSong((prev) => ({ ...prev, artist: e.target.value }))
-              }
+              onChange={(e) => {
+                setNewSong((prev) => ({ ...prev, artist: e.target.value, artist_id: "" }));
+              }}
+              placeholder="Nhập tên nghệ sĩ để tìm kiếm..."
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded"
               required
             />
+            {artistSuggestions.length > 0 && (
+              <div className="absolute w-full bg-gray-800 border border-gray-600 rounded mt-1 max-h-40 overflow-y-auto z-50">
+                {artistSuggestions.map((artist) => (
+                  <div
+                    key={artist._id}
+                    className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
+                    onClick={() => handleArtistSelect(artist)}
+                  >
+                    {artist.name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Album Select */}
