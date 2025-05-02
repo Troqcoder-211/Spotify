@@ -97,7 +97,7 @@ const playerSlice = createSlice({
 
 			if (idx !== -1) {
 				// Nếu bài hát đã có trong playlist, không thêm vào
-				return;
+				state.currentTrackIndex = idx; // Chọn bài hát đầu tiên trong playlist mới
 			} else {
 				// Thêm bài hát vào đầu playlist (unshift)
 				state.playlist.unshift(track);

@@ -14,7 +14,7 @@ import { IoMdMenu } from 'react-icons/io';
 import { PiMusicNotesPlus } from 'react-icons/pi';
 import { AiOutlineFolder } from 'react-icons/ai';
 
-import {} from '../services/FolderService';
+import FolderService from '../services/FolderService';
 import { useSelector } from 'react-redux';
 
 const Sidebar = () => {
