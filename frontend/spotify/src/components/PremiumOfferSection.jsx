@@ -2,12 +2,30 @@ import React, { useRef } from "react";
 import { assets } from "../assets/img/assets";
 import Navbar from "./Navbar";
 
+import TransactionService from "../services/TransactionService";
+
 const PremiumSection = () => {
   const individualRef = useRef(null);
 
   const handleScrollToIndividual = () => {
     individualRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const handleCreateTransaction = async () => {
+    try {
+      const res = await TransactionService.createTransaction(1); // ID của gói Individual
+      console.log(res)
+
+      if (res?.success && res?.data?.checkoutUrl) {
+        window.location.href = res.data.checkoutUrl; // Mở trang thanh toán
+      } else {
+        alert("Không thể tạo giao dịch.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi tạo giao dịch:", error);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -16,7 +34,7 @@ const PremiumSection = () => {
         <div className="bg-gradient-to-r from-purple-800 to-indigo-900 text-center px-4 py-12 md:py-16">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-snug">
             Nghe không giới hạn. Dùng thử gói <br className="hidden md:block" />
-            Premium trong 2 tháng với giá 59.000 ₫.
+            Premium trong 2 tháng với giá 2.000 ₫.
           </h1>
           <p className="text-lg md:text-xl mb-8">
             Sau đó chỉ 59.000 ₫/tháng. Hủy bất cứ lúc nào.
@@ -27,12 +45,12 @@ const PremiumSection = () => {
               onClick={handleScrollToIndividual}
               className="bg-white text-black font-semibold py-3 px-6 rounded-full hover:bg-gray-200 transition"
             >
-              Dùng thử 2 tháng với giá 59.000 ₫
+              Dùng thử 2 tháng với giá 2.000 ₫
             </button>
           </div>
 
           <p className="text-sm text-gray-200 mt-6 max-w-md mx-auto">
-            59.000 ₫ cho 2 tháng, sau đó là 59.000 ₫/tháng. Chỉ áp dụng ưu đãi
+            2.000 ₫ cho 2 tháng, sau đó là 59.000 ₫/tháng. Chỉ áp dụng ưu đãi
             nếu bạn chưa từng dùng gói Premium.{" "}
           </p>
         </div>
@@ -83,7 +101,7 @@ const PremiumSection = () => {
         >
           <div className="bg-neutral-900 rounded-xl p-6 max-w-md mx-auto text-left">
             <span className="bg-pink-300 text-black text-sm font-semibold px-3 py-1 rounded-full">
-              59.000 ₫ cho 2 tháng
+              2.000 ₫ cho 2 tháng
             </span>
 
             <div className="mt-4 flex items-center gap-2">
@@ -108,12 +126,14 @@ const PremiumSection = () => {
               <li>Đăng ký hoặc thanh toán một lần</li>
             </ul>
 
-            <button className="mt-6 w-full bg-pink-300 text-black font-semibold py-3 rounded-full hover:bg-pink-200 transition">
-              Dùng thử 2 tháng với giá 59.000 ₫
+            <button
+                onClick={handleCreateTransaction}
+               className="mt-6 w-full bg-pink-300 text-black font-semibold py-3 rounded-full hover:bg-pink-200 transition">
+              Dùng thử 2 tháng với giá 2.000 ₫
             </button>
 
             <p className="text-xs text-white/60 mt-4">
-              59.000 ₫ cho 2 tháng, sau đó là 59.000 ₫/tháng. Chỉ áp dụng ưu đãi
+              2.000 ₫ cho 2 tháng, sau đó là 59.000 ₫/tháng. Chỉ áp dụng ưu đãi
               nếu bạn chưa từng dùng gói Premium.{" "}
             </p>
           </div>

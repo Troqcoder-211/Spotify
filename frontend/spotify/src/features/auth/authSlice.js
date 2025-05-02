@@ -48,7 +48,13 @@ const initialState = {
 const authSlice = createSlice({
 	name: 'auth',
 	initialState,
-	reducers: {},
+	reducers: {
+		setAccountType: (state, action) => {
+			if (state.user) {
+				state.user.account_type = action.payload;
+			}
+		},
+	},
 	extraReducers: (builder) => {
 		builder
 			.addCase(loginUser.pending, (state) => {
@@ -87,3 +93,4 @@ const authSlice = createSlice({
 });
 
 export default authSlice.reducer;
+export const { setAccountType } = authSlice.actions;

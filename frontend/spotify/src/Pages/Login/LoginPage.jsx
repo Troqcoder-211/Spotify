@@ -18,9 +18,8 @@ export default function LoginPage() {
 			const resultAction = await dispatch(loginUser({ email, password }));
 
 			const data = unwrapResult(resultAction);
-
 			// ✅ Hiển thị toast thành công
-			alert(`Xin chào ${data?.user?.fullName || 'người dùng'}!`);
+			alert(`Xin chào ${data?.user?.email || 'người dùng'}!`);
 
 			// 👉 Chuyển hướng nếu cần, ví dụ:
 			navigate('/');

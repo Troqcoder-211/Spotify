@@ -1,118 +1,270 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { assets } from '../assets/img/assets';
-import { PlayerContext } from '../context/PlayerContext';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+	play,
+	pause,
+	nextTrack,
+	previousTrack,
+	setCurrentTime,
+	setRepeatMode,
+	setShuffle,
+} from '../features/player/playerSlice';
+import QueueCard from './QueueCard';
+
 const Player = () => {
-	// console.log(props);
-
+	const dispatch = useDispatch();
 	const {
-		track,
-		seekBar,
-		seekBg,
 		playStatus,
-		play,
-		pause,
-		time,
-		previous,
-		next,
-		seekSong,
-	} = useContext(PlayerContext);
+		currentTime,
+		totalTime,
+		repeatMode,
+		playlist,
+		shuffle,
+		currentTrackIndex,
+	} = useSelector((state) => state.player);
 
-	// console.log({ time });
+	const audioRef = useRef(null); // reference to the audio element
 
-	// console.log(
-	//   seekBar + " " + seekBg + " " + playStatus + " " + play + " " + pause
-	// );
+	const [isDragging, setIsDragging] = useState(false);
 
+	const formatTime = (time) =>
+		`${time.minute}:${time.second < 10 ? `0${time.second}` : time.second}`;
+
+	const handleSeek = (e) => {
+		const bar = e.currentTarget;
+		const clickX = e.clientX - bar.getBoundingClientRect().left;
+		const width = bar.clientWidth;
+		const percent = clickX / width;
+
+		const totalSeconds = totalTime.minute * 60 + totalTime.second;
+		const seekToSeconds = Math.floor(percent * totalSeconds);
+
+		if (audioRef.current && playlist[currentTrackIndex]) {
+			audioRef.current.currentTime = seekToSeconds;
+			dispatch(
+				setCurrentTime({
+					minute: Math.floor(seekToSeconds / 60),
+					second: seekToSeconds % 60,
+				})
+			);
+		}
+	};
+
+	useEffect(() => {
+		dispatch(pause());
+	}, []);
+
+	useEffect(() => {
+		if (!audioRef.current || !playlist[currentTrackIndex]) return;
+
+		const audio = audioRef.current;
+		const newTime = currentTime.minute * 60 + currentTime.second;
+		// Chỉ cập nhật nếu khác (tránh loop)
+		if (Math.floor(audio.currentTime) !== newTime) {
+			audio.currentTime = newTime;
+		}
+
+		// Chỉ phát khi đã có bài và trạng thái là đang phát
+		if (playStatus) {
+			const playPromise = audio.play();
+
+			if (playPromise !== undefined) {
+				playPromise.catch((error) => {
+					console.warn('Không thể phát audio:', error);
+				});
+			}
+		} else {
+			audio.pause();
+		}
+	}, [playStatus, currentTrackIndex, playlist, currentTime]);
+
+	// Lắng nghe sự kiện onTimeUpdate để cập nhật tiến trình bài hát
+	useEffect(() => {
+		const audioElement = audioRef.current;
+		if (!audioElement) return;
+
+		const handleEnded = () => {
+			switch (repeatMode) {
+				case 'one':
+					dispatch(setCurrentTime({ minute: 0, second: 0 }));
+					return;
+				case 'all':
+					dispatch(nextTrack({ isRepeat: true }));
+					return;
+				default:
+					dispatch(nextTrack({ isRepeat: false }));
+					return;
+			}
+		};
+		const handleTimeUpdate = () => {
+			const currentSec = Math.floor(audioElement.currentTime);
+
+			audioElement.addEventListener('ended', handleEnded);
+
+			const minute = Math.floor(currentSec / 60);
+			const second = currentSec % 60;
+			dispatch(setCurrentTime({ minute, second }));
+		};
+
+		audioElement.addEventListener('timeupdate', handleTimeUpdate);
+
+		return () => {
+			audioElement.removeEventListener('timeupdate', handleTimeUpdate);
+			audioElement.removeEventListener('ended', handleEnded);
+		};
+	}, [dispatch, totalTime, repeatMode]);
+
+	// progress bar
+	const handleMouseDown = (e) => {
+		setIsDragging(true);
+		handleSeek(e); // Ensure we update the progress when the user starts dragging
+	};
+
+	const handleMouseUp = () => {
+		setIsDragging(false);
+	};
+
+	const handleMouseMove = (e) => {
+		if (isDragging) {
+			handleSeek(e);
+		}
+	};
+
+	const [showQueue, setShowQueue] = useState(false);
+
+	const handleShowQueue = () => {
+		setShowQueue(!showQueue);
+	};
 	return (
-		<div className='h-[10%] bg-black flex justify-between items-center text-white px-4 '>
-			{/* Image and text */}
-			<div className='hidden lg:flex items-center gap-4 '>
-				<img className='w-12' src={track.image} alt='anhbaihat' />
-				<div>
-					<p>{track.name}</p>
-					<p>{track.desc.slice(0, 12)}</p>
-				</div>
-			</div>
-
-			{/* controls  */}
-			<div className='flex flex-col items-center gap-1 m-auto'>
-				<div className='flex gap-4'>
+		<div className='flex h-[10%] flex-col justify-center'>
+			<div className='h-[100%] bg-black flex justify-between items-center text-white px-4 '>
+				{/* Image and text */}
+				<div className='hidden lg:flex items-center gap-4 '>
 					<img
-						className='w-4 cursor-pointer '
-						src={assets.shuffle_icon}
-						alt='shuffle'
+						className='w-12'
+						src={
+							playlist[currentTrackIndex]?.img_path ||
+							import.meta.env.VITE_IMG_DEFAULT
+						}
+						alt='anhbaihat'
 					/>
-					<img
-						onClick={previous}
-						className='w-4 cursor-pointer '
-						src={assets.prev_icon}
-						alt='prev'
-					/>
-
-					{/* play and pause button */}
-					{playStatus ? (
-						<img
-							onClick={pause}
-							className='w-4 cursor-pointer '
-							src={assets.pause_icon}
-							alt='pause'
-						/>
-					) : (
-						<img
-							onClick={play}
-							className='w-4 cursor-pointer '
-							src={assets.play_icon}
-							alt='play'
-						/>
-					)}
-
-					<img
-						onClick={next}
-						className='w-4 cursor-pointer '
-						src={assets.next_icon}
-						alt='next'
-					/>
-					<img
-						className='w-4 cursor-pointer '
-						src={assets.loop_icon}
-						alt='loop'
-					/>
-				</div>
-				<div className='flex items-center gap-5'>
-					<p>
-						{time.currentTime.minute}:
-						{time.currentTime.second < 10
-							? `0${time.currentTime.second}`
-							: time.currentTime.second}
-					</p>
-					<div
-						ref={seekBg}
-						onClick={seekSong}
-						className='w-[60vw] max-w-[500px] bg-gray-300 rounded-full cursor-pointer'
-					>
-						<hr
-							ref={seekBar}
-							className='h-1 border-none w-10 bg-green-800 rounded-full'
-						></hr>
+					<div>
+						<p>{playlist[currentTrackIndex]?.title || 'Unknown'}</p>
+						<p>
+							{playlist[currentTrackIndex]?.artists || '[nghệ sĩ1, nghệ sĩ2]'}
+						</p>
 					</div>
-					<p>
-						{time.totalTime.minute}:
-						{time.totalTime.second < 10
-							? `0${time.totalTime.second}`
-							: time.totalTime.second}
-					</p>
+				</div>
+				{/* AUDIO */}
+				{/* Audio Player */}
+				<audio
+					ref={audioRef}
+					src={playlist[currentTrackIndex]?.file_path}
+					hidden
+					controls
+					preload='metadata'
+				/>
+				{/* controls  */}
+				<div className='flex flex-col items-center gap-3 m-auto'>
+					<div className='flex gap-4'>
+						<img
+							onClick={() => dispatch(setShuffle())}
+							className='w-4 cursor-pointer '
+							src={shuffle ? assets.shuffle_e_icon : assets.shuffle_icon}
+							alt='shuffle'
+						/>
+						<img
+							onClick={() => dispatch(previousTrack())}
+							className='w-4 cursor-pointer '
+							src={assets.prev_icon}
+							alt='prev'
+						/>
+
+						{/* play and pause button */}
+						{playStatus ? (
+							<img
+								onClick={() => dispatch(pause())}
+								className='w-4 cursor-pointer '
+								src={assets.pause_icon}
+								alt='pause'
+							/>
+						) : (
+							<img
+								onClick={() => dispatch(play())}
+								className='w-4 cursor-pointer '
+								src={assets.play_icon}
+								alt='play'
+							/>
+						)}
+
+						<img
+							onClick={() => dispatch(nextTrack({ isRepeat: false }))}
+							className='w-4 cursor-pointer '
+							src={assets.next_icon}
+							alt='next'
+						/>
+						<img
+							onClick={() => dispatch(setRepeatMode())}
+							className='w-4 cursor-pointer '
+							src={
+								repeatMode === 'off'
+									? assets.loop_icon
+									: repeatMode === 'one'
+									? assets.loop_e_o_icon
+									: assets.loop_e_icon
+							}
+							alt='loop'
+						/>
+					</div>
+					<div className='flex items-center gap-5'>
+						<p>{formatTime(currentTime)}</p>
+						<div
+							onMouseDown={handleMouseDown}
+							onMouseMove={handleMouseMove}
+							onMouseUp={handleMouseUp}
+							onMouseLeave={handleMouseUp}
+							className='w-[60vw] max-w-[500px] bg-gray-300 rounded-full cursor-pointer relative h-2 expand-hitbox '
+						>
+							<div
+								style={{
+									width: `${
+										((currentTime.minute * 60 + currentTime.second) /
+											(totalTime.minute * 60 + totalTime.second || 1)) *
+										100
+									}%`,
+								}}
+								className='h-full bg-green-800 rounded-full absolute top-0 left-0'
+							></div>
+						</div>
+						<p>{formatTime(totalTime)}</p>
+					</div>
+				</div>
+				<div className='hidden lg:flex items-center gap-2 opacity-75'>
+					<img className='w-4 ' src={assets.play_icon} alt='play' />
+					<img className='w-4 ' src={assets.mic_icon} alt='play' />
+					<img
+						onClick={handleShowQueue}
+						className='w-4 cursor-pointer '
+						src={showQueue ? assets.queue_e_icon : assets.queue_icon}
+						alt='play'
+					/>
+					<img className='w-4 ' src={assets.speaker_icon} alt='play' />
+					<img className='w-4 ' src={assets.volume_icon} alt='play' />
+					<div className='w-20 bg-slate-50 h-1 rounded '></div>
+					<img className='w-4 ' src={assets.mini_player_icon} alt='play' />
+					<img className='w-4 ' src={assets.zoom_icon} alt='play' />
 				</div>
 			</div>
-			<div className='hidden lg:flex items-center gap-2 opacity-75'>
-				<img className='w-4 ' src={assets.play_icon} alt='play' />
-				<img className='w-4 ' src={assets.mic_icon} alt='play' />
-				<img className='w-4 ' src={assets.queue_icon} alt='play' />
-				<img className='w-4 ' src={assets.speaker_icon} alt='play' />
-				<img className='w-4 ' src={assets.volume_icon} alt='play' />
-				<div className='w-20 bg-slate-50 h-1 rounded '></div>
-				<img className='w-4 ' src={assets.mini_player_icon} alt='play' />
-				<img className='w-4 ' src={assets.zoom_icon} alt='play' />
-			</div>
+			{showQueue && (
+				<div className='absolute right-0 top-0 z-50 h-[90%]'>
+					<QueueCard
+						nowPlaying={playlist[currentTrackIndex]}
+						nextUp={playlist[currentTrackIndex + 1] || {}}
+						onClose={() => setShowQueue(false)}
+					/>
+				</div>
+			)}
 		</div>
 	);
 };

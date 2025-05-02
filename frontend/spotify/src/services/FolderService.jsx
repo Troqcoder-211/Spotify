@@ -1,12 +1,12 @@
 import api from "../api/axios";
 import { apiRequest } from "../api/ApiRequest";
 
-// const FolderService = {
-//   getAllFolders: async () => {
-//     return await apiRequest(() => {
-//       return api.get("/folders/");
-//     });
-//   },
+const FolderService = {
+  getAllFolders: async () => {
+    return await apiRequest(() => {
+      return api.get("/folders/");
+    });
+  },
 
   // Các method khác có thể thêm ở đây, ví dụ:
   // createFolder: async (data) => {
@@ -14,8 +14,7 @@ import { apiRequest } from "../api/ApiRequest";
   //     return api.post("/folders", data);
   //   });
   // }
-// };
+};
 
-export const fetchAllFolder = () => api.get('/folders/')
 
-// export default FolderService;
+export default FolderService;
