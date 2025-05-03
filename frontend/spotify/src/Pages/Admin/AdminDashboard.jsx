@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from 'axios';
 import { FaMusic, FaCompactDisc } from "react-icons/fa";
 import AddSongForm from "./components/AddSongForm";
 import AddAlbumForm from "./components/AddAlbumForm";
@@ -6,18 +7,76 @@ import AddAlbumForm from "./components/AddAlbumForm";
 const AdminDashboard = () => {
   // Dữ liệu thống kê (dummy data)
 
-  const [activeTab, setActiveTab] = useState("songs"); // tab đang được chọn
-
+  const [activeTab, setActiveTab] = useState("songs");
   const [showAddSongForm, setShowAddSongForm] = useState(false);
   const [showAddAlbumForm, setShowAddAlbumForm] = useState(false);
 
-  const stats = [
-    { label: "Total Songs", value: 14, icon: "🎵" },
-    { label: "Total Albums", value: 4, icon: "💿" },
-    { label: "Total Artists", value: 15, icon: "👤" },
-    { label: "Total Users", value: 1, icon: "🔊" },
-  ];
+  const [totalUsers, setTotalUsers] = useState(null);
+  const [totalSongs, setTotalSongs] = useState(null);
+  const [totalListen, setTotalListen] = useState(null);
+  const [totalArtists, setTotalArtists] = useState(null);
+  useEffect(() => {
+    // Total User
+    axios
+      .get("http://localhost:8888/api/users/count/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}` // Nếu dùng JWT
+        }
+      })
+      .then((res) => {
+        setTotalUsers(res.data.total_users);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy số lượng người dùng:", err);
+      });
 
+    // Total Artists
+    axios
+      .get("http://localhost:8888/api/artists/count/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      })
+      .then((res) => {
+        setTotalArtists(res.data.total_artists);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy số lượng nghệ sĩ:", err);
+      });
+    // Total Listen
+    axios
+      .get("http://localhost:8888/api/listen/count/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      })
+      .then((res) => {
+        setTotalListen(res.data.total_listen);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy số lượng lượt nghe:", err);
+      });
+    // Total songs
+    axios
+      .get("http://localhost:8888/api/tracks/count/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      })
+      .then((res) => {
+        setTotalSongs(res.data.total_songs);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy số lượng bài hát:", err);
+      });
+  }, []);
+
+  const stats = [
+    { label: "Total Songs", value: totalSongs !== null ? totalSongs : "Loading...", icon: <FaMusic /> },
+    { label: "Total Listen", value: totalListen !== null ? totalListen : "Loading...", icon: <FaCompactDisc /> },
+    { label: "Total Artists", value: totalArtists !== null ? totalArtists : "Loading...", icon: "👤" },
+    { label: "Total Users", value: totalUsers !== null ? totalUsers : "Loading...", icon: "🔊" }
+  ];
   // Dữ liệu bảng (dummy data)
   const songs = [
     { title: "Into The Wild", artist: "Tate McRae", releaseDate: "2023-02-14" },
