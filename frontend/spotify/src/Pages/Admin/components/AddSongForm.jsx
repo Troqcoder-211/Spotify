@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import TrackService from "../../../services/TrackService";
 import ArtistService from "../../../services/ArtistService";
@@ -8,6 +7,7 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
   const audioInputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [artistSuggestions, setArtistSuggestions] = useState([]);
+  const searchTimeoutRef = useRef(null);
 
   const [files, setFiles] = useState({ image: null, audio: null });
   const [newSong, setNewSong] = useState({
@@ -24,32 +24,51 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
       return;
     }
 
-    try {
-      const response = await ArtistService.search(searchTerm);
-      if (response.success) {
-        setArtistSuggestions(response.data);
-      }
-    } catch (error) {
-      console.error("Lỗi khi tìm kiếm nghệ sĩ:", error);
-      setArtistSuggestions([]);
+    // Hủy timeout trước đó nếu có
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
+
+    // Đặt timeout mới
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await ArtistService.search(searchTerm);
+        if (response.success) {
+          const artistsWithKeys = response.data.map(artist => ({
+            ...artist,
+            key: artist.artist_id
+          }));
+          setArtistSuggestions(artistsWithKeys);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tìm kiếm nghệ sĩ:", error);
+        setArtistSuggestions([]);
+      }
+    }, 500); 
   };
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (newSong.artist) {
-        handleArtistSearch(newSong.artist);
+    // Cleanup function để hủy timeout khi component unmount
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
       }
-    }, 300);
+    };
+  }, []);
 
-    return () => clearTimeout(delayDebounceFn);
+  useEffect(() => {
+    if (newSong.artist) {
+      handleArtistSearch(newSong.artist);
+    } else {
+      setArtistSuggestions([]);
+    }
   }, [newSong.artist]);
 
   const handleArtistSelect = (artist) => {
     setNewSong(prev => ({
       ...prev,
       artist: artist.name,
-      artist_id: artist._id
+      artist_id: artist.artist_id
     }));
     setArtistSuggestions([]);
   };
@@ -59,26 +78,25 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
     setIsLoading(true);
     try {
       // Kiểm tra các trường bắt buộc
-      if (!newSong.title || !files.audio || !newSong.artist_id) {
-        console.log( newSong.artist_id);
+      if (!newSong.title || !files.audio || !newSong.artist_id || !newSong.album || !files.image) {
         alert("Vui lòng điền đầy đủ thông tin bắt buộc");
         setIsLoading(false);
         return;
       }
 
       // Lấy duration từ file audio
-      const durationInSeconds = await new Promise((resolve) => {
+      const audioDuration = await new Promise((resolve) => {
         const audio = new Audio(URL.createObjectURL(files.audio));
         audio.addEventListener('loadedmetadata', () => {
           resolve(Math.floor(audio.duration));
         });
       });
 
-      // Gọi API thêm nhạc
       const response = await TrackService.add({
         title: newSong.title,
-        duration: durationInSeconds,
+        duration: audioDuration,
         file_path: files.audio,
+        img_path: files.image,    
         album: newSong.album === "none" ? "none" : newSong.album,
         artist_id: newSong.artist_id,
         track_number: null,
@@ -86,6 +104,8 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
         preview_url: '',
         is_active: true
       });
+
+      
 
       if (!response.success) {
         throw new Error(response.message || "Response lỗi");
@@ -102,9 +122,9 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
   };
 
   return (
-    <div className="bg-gray-500 p-6 rounded-lg space-y-4 py-4 text-white w-[400px] absolute top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
-      <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
-        <div className="bg-zinc-900 border border-zinc-700 w-[90%] max-w-md rounded-lg p-6 space-y-5 relative text-white">
+    <div className="bg-gray-500 p-6 rounded-lg space-y-4 py-4 text-white w-[400px] absolute top-3/3 left-1/2 -translate-x-1/2 -translate-y-1/2 ">
+    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
+      <div className="bg-zinc-900 border border-zinc-700 w-[90%] max-w-md rounded-lg p-6 space-y-5 relative text-white">
           {/* Hidden Inputs */}
           <input
             type="file"
@@ -213,9 +233,14 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
             <label className="text-sm font-medium">Album (Optional)</label>
             <select
               value={newSong.album}
-              onChange={(e) =>
-                setNewSong((prev) => ({ ...prev, album: e.target.value }))
-              }
+              onChange={(e) => {
+                const albumValue = e.target.value;
+                setNewSong((prev) => ({
+                  ...prev,
+                  album: albumValue,
+                  track_number: albumValue === "none" ? null : prev.track_number
+                }));
+              }}
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded"
             >
               <option value="">-- Select Album --</option>
