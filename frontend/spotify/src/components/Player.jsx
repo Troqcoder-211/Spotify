@@ -10,7 +10,7 @@ import {
 	setRepeatMode,
 	setShuffle,
 } from '../features/player/playerSlice';
-import QueueCard from './QueueCard';
+import QueueCard from './Queue/QueueCard';
 
 const Player = () => {
 	const dispatch = useDispatch();
@@ -24,7 +24,11 @@ const Player = () => {
 		currentTrackIndex,
 	} = useSelector((state) => state.player);
 
-	const audioRef = useRef(null); // reference to the audio element
+	const audioRef = useRef(null);
+	const videoRef = useRef(null);
+	const mediaRef = playlist[currentTrackIndex]?.video_path
+		? videoRef
+		: audioRef;
 
 	const [isDragging, setIsDragging] = useState(false);
 
@@ -40,8 +44,8 @@ const Player = () => {
 		const totalSeconds = totalTime.minute * 60 + totalTime.second;
 		const seekToSeconds = Math.floor(percent * totalSeconds);
 
-		if (audioRef.current && playlist[currentTrackIndex]) {
-			audioRef.current.currentTime = seekToSeconds;
+		if (mediaRef.current && playlist[currentTrackIndex]) {
+			mediaRef.current.currentTime = seekToSeconds;
 			dispatch(
 				setCurrentTime({
 					minute: Math.floor(seekToSeconds / 60),
@@ -56,9 +60,9 @@ const Player = () => {
 	}, []);
 
 	useEffect(() => {
-		if (!audioRef.current || !playlist[currentTrackIndex]) return;
+		if (!mediaRef.current || !playlist[currentTrackIndex]) return;
 
-		const audio = audioRef.current;
+		const audio = mediaRef.current;
 		const newTime = currentTime.minute * 60 + currentTime.second;
 		// Chỉ cập nhật nếu khác (tránh loop)
 		if (Math.floor(audio.currentTime) !== newTime) {
@@ -79,10 +83,9 @@ const Player = () => {
 		}
 	}, [playStatus, currentTrackIndex, playlist, currentTime]);
 
-	// Lắng nghe sự kiện onTimeUpdate để cập nhật tiến trình bài hát
 	useEffect(() => {
-		const audioElement = audioRef.current;
-		if (!audioElement) return;
+		const mediaElement = mediaRef.current;
+		if (!mediaElement) return;
 
 		const handleEnded = () => {
 			switch (repeatMode) {
@@ -98,27 +101,27 @@ const Player = () => {
 			}
 		};
 		const handleTimeUpdate = () => {
-			const currentSec = Math.floor(audioElement.currentTime);
+			const currentSec = Math.floor(mediaElement.currentTime);
 
-			audioElement.addEventListener('ended', handleEnded);
+			mediaElement.addEventListener('ended', handleEnded);
 
 			const minute = Math.floor(currentSec / 60);
 			const second = currentSec % 60;
 			dispatch(setCurrentTime({ minute, second }));
 		};
 
-		audioElement.addEventListener('timeupdate', handleTimeUpdate);
+		mediaElement.addEventListener('timeupdate', handleTimeUpdate);
 
 		return () => {
-			audioElement.removeEventListener('timeupdate', handleTimeUpdate);
-			audioElement.removeEventListener('ended', handleEnded);
+			mediaElement.removeEventListener('timeupdate', handleTimeUpdate);
+			mediaElement.removeEventListener('ended', handleEnded);
 		};
 	}, [dispatch, totalTime, repeatMode]);
 
 	// progress bar
 	const handleMouseDown = (e) => {
 		setIsDragging(true);
-		handleSeek(e); // Ensure we update the progress when the user starts dragging
+		handleSeek(e);
 	};
 
 	const handleMouseUp = () => {
@@ -142,7 +145,7 @@ const Player = () => {
 				{/* Image and text */}
 				<div className='hidden lg:flex items-center gap-4 '>
 					<img
-						className='w-12'
+						className='w-16'
 						src={
 							playlist[currentTrackIndex]?.img_path ||
 							import.meta.env.VITE_IMG_DEFAULT
@@ -150,63 +153,91 @@ const Player = () => {
 						alt='anhbaihat'
 					/>
 					<div>
-						<p>{playlist[currentTrackIndex]?.title || 'Unknown'}</p>
-						<p>
+						<p className='font-bold '>
+							{playlist[currentTrackIndex]?.title || 'Unknown'}
+						</p>
+						<p className='text-[13px] text-[#b3b3b3] font-bold'>
 							{playlist[currentTrackIndex]?.artists || '[nghệ sĩ1, nghệ sĩ2]'}
 						</p>
 					</div>
 				</div>
-				{/* AUDIO */}
-				{/* Audio Player */}
-				<audio
-					ref={audioRef}
-					src={playlist[currentTrackIndex]?.file_path}
-					hidden
-					controls
-					preload='metadata'
-				/>
+				{/* AUDIO / VIDEO */}
+				{/* Audio / Video Player */}
+				<div
+					className={`absolute top-0 right-0 w-[510px] h-[90%] bg-black z-51 transition-all duration-300 ${
+						playlist[currentTrackIndex]?.video_path ? 'block' : 'hidden'
+					}`}
+				>
+					{playlist[currentTrackIndex]?.video_path ? (
+						<video
+							ref={videoRef}
+							src={playlist[currentTrackIndex].video_path}
+							controls
+							autoPlay
+							className='w-full h-[30%] object-cover'
+						/>
+					) : (
+						<audio
+							ref={audioRef}
+							src={playlist[currentTrackIndex]?.file_path}
+							hidden
+							controls
+							preload='metadata'
+						/>
+					)}
+				</div>
+
 				{/* controls  */}
 				<div className='flex flex-col items-center gap-3 m-auto'>
-					<div className='flex gap-4'>
+					<div className='flex gap-y-4 gap-x-7 items-center'>
 						<img
 							onClick={() => dispatch(setShuffle())}
-							className='w-4 cursor-pointer '
+							className='w-5 cursor-pointer '
 							src={shuffle ? assets.shuffle_e_icon : assets.shuffle_icon}
 							alt='shuffle'
 						/>
 						<img
 							onClick={() => dispatch(previousTrack())}
-							className='w-4 cursor-pointer '
+							className='w-5 cursor-pointer '
 							src={assets.prev_icon}
 							alt='prev'
 						/>
 
 						{/* play and pause button */}
+
 						{playStatus ? (
-							<img
+							<div
 								onClick={() => dispatch(pause())}
-								className='w-4 cursor-pointer '
-								src={assets.pause_icon}
-								alt='pause'
-							/>
+								className='h-12 w-12 bg-[#00c951] rounded-[50%] flex items-center justify-center  cursor-pointer select-none '
+							>
+								<img
+									className='w-6 cursor-pointer '
+									src={assets.pause_icon}
+									alt='pause'
+								/>
+							</div>
 						) : (
-							<img
+							<div
 								onClick={() => dispatch(play())}
-								className='w-4 cursor-pointer '
-								src={assets.play_icon}
-								alt='play'
-							/>
+								className='h-12 w-12 bg-[#00c951] rounded-[50%] flex items-center justify-center cursor-pointer select-none '
+							>
+								<img
+									className='w-5 cursor-pointer '
+									src={assets.play_icon}
+									alt='play'
+								/>
+							</div>
 						)}
 
 						<img
 							onClick={() => dispatch(nextTrack({ isRepeat: false }))}
-							className='w-4 cursor-pointer '
+							className='w-5 cursor-pointer '
 							src={assets.next_icon}
 							alt='next'
 						/>
 						<img
 							onClick={() => dispatch(setRepeatMode())}
-							className='w-4 cursor-pointer '
+							className='w-5 cursor-pointer '
 							src={
 								repeatMode === 'off'
 									? assets.loop_icon
@@ -224,7 +255,7 @@ const Player = () => {
 							onMouseMove={handleMouseMove}
 							onMouseUp={handleMouseUp}
 							onMouseLeave={handleMouseUp}
-							className='w-[60vw] max-w-[500px] bg-gray-300 rounded-full cursor-pointer relative h-2 expand-hitbox '
+							className='group w-[60vw] max-w-[800px] bg-[#4d4d4d] rounded-full cursor-pointer relative h-[4px] expand-hitbox'
 						>
 							<div
 								style={{
@@ -234,35 +265,33 @@ const Player = () => {
 										100
 									}%`,
 								}}
-								className='h-full bg-green-800 rounded-full absolute top-0 left-0'
-							></div>
+								className='h-full bg-[#fff] rounded-full absolute top-0 left-0 group-hover:bg-[#1db954]'
+							>
+								<div className='hidden group-hover:block w-4 h-4 bg-white rounded-full absolute -right-1 top-1/2 -translate-y-1/2'></div>
+							</div>
 						</div>
 						<p>{formatTime(totalTime)}</p>
 					</div>
 				</div>
-				<div className='hidden lg:flex items-center gap-2 opacity-75'>
-					<img className='w-4 ' src={assets.play_icon} alt='play' />
-					<img className='w-4 ' src={assets.mic_icon} alt='play' />
+				<div className='hidden lg:flex items-center gap-y-2 gap-x-4 opacity-75'>
+					<img className='w-[16px] ' src={assets.play_icon} alt='play' />
+					{/* <img className='w-[16px] ' src={assets.mic_icon} alt='play' /> */}
 					<img
 						onClick={handleShowQueue}
-						className='w-4 cursor-pointer '
+						className='w-[16px] cursor-pointer '
 						src={showQueue ? assets.queue_e_icon : assets.queue_icon}
 						alt='play'
 					/>
-					<img className='w-4 ' src={assets.speaker_icon} alt='play' />
-					<img className='w-4 ' src={assets.volume_icon} alt='play' />
-					<div className='w-20 bg-slate-50 h-1 rounded '></div>
-					<img className='w-4 ' src={assets.mini_player_icon} alt='play' />
-					<img className='w-4 ' src={assets.zoom_icon} alt='play' />
+					{/* <img className='w-[16px] ' src={assets.speaker_icon} alt='play' /> */}
+					<img className='w-[16px] ' src={assets.volume_icon} alt='play' />
+					<div className='w-30 bg-slate-50 h-[4px] rounded '></div>
+					{/* <img className='w-[16px] ' src={assets.mini_player_icon} alt='play' /> */}
+					<img className='w-[16px] ' src={assets.zoom_icon} alt='play' />
 				</div>
 			</div>
 			{showQueue && (
 				<div className='absolute right-0 top-0 z-50 h-[90%]'>
-					<QueueCard
-						nowPlaying={playlist[currentTrackIndex]}
-						nextUp={playlist[currentTrackIndex + 1] || {}}
-						onClose={() => setShowQueue(false)}
-					/>
+					<QueueCard onClose={() => setShowQueue(false)} />
 				</div>
 			)}
 		</div>

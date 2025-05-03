@@ -33,11 +33,6 @@ export const registerUser = createAsyncThunk(
 	}
 );
 
-export const logoutUser = createAsyncThunk('auth/logoutUser', () => {
-	TokenService.clearTokens();
-	return AuthService.logout();
-});
-
 const initialState = {
 	user: null,
 	isAuthenticated: false,
@@ -53,6 +48,12 @@ const authSlice = createSlice({
 			if (state.user) {
 				state.user.account_type = action.payload;
 			}
+		},
+		logoutUser: (state) => {
+			TokenService.clearTokens();
+			state.loading = false;
+			state.isAuthenticated = false;
+			state.user = null;
 		},
 	},
 	extraReducers: (builder) => {
@@ -82,15 +83,9 @@ const authSlice = createSlice({
 			.addCase(registerUser.rejected, (state) => {
 				state.loading = false;
 				state.error = true;
-			})
-
-			.addCase(logoutUser.fulfilled, (state) => {
-				state.loading = false;
-				state.isAuthenticated = false;
-				state.user = null;
 			});
 	},
 });
 
 export default authSlice.reducer;
-export const { setAccountType } = authSlice.actions;
+export const { setAccountType, logoutUser } = authSlice.actions;

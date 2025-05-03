@@ -16,7 +16,7 @@ const SongItem = ({ props }) => {
 		>
 			<img
 				className='w-[160px] h-[160px] rounded object-cover'
-				src={props.img_path}
+				src={props.img_path || import.meta.env.VITE_IMG_DEFAULT}
 				alt={props.title}
 			/>
 			<div className='mt-3 text-center w-full'>

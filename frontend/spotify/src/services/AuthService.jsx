@@ -8,9 +8,6 @@ const AuthService = {
 			return api.post('/auth/login/', { email, password });
 		});
 	},
-	logout: async () => {
-		return { success: true };
-	},
 	register: async (email, password, username) => {
 		return await apiRequest(() => {
 			return api.post('/auth/register/', { email, password, username });
