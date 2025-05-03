@@ -57,11 +57,9 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setIsLoading(true);
+
 		try {
 			// Kiểm tra các trường bắt buộc
-			console.log(newSong.title);
-			console.log(files.audio);
-			console.log(newSong.artist_id);
 			if (!newSong.title || !files.audio || !newSong.artist_id) {
 				alert('Vui lòng điền đầy đủ thông tin bắt buộc');
 				setIsLoading(false);
@@ -76,27 +74,45 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
 				});
 			});
 
+			// Tạo FormData object
+			const formData = new FormData();
+			formData.append('title', newSong.title);
+			formData.append('duration', durationInSeconds);
+			formData.append('artist_id', newSong.artist_id);
+			formData.append('album', newSong.album === 'none' ? 'none' : newSong.album);
+			formData.append('track_number', newSong.album === 'none' ? 'null' : newSong.track_number);
+			formData.append('popularity', '0');
+			formData.append('preview_url', '');
+			formData.append('is_active', 'true');
+
+			// Thêm file nhạc
+			if (files.audio) {
+				formData.append('file_path', files.audio);
+			}
+
+			// Thêm file ảnh
+			if (files.image) {
+				formData.append('img_path', files.image);
+			}
+
+			// Log formData để debug
+			console.log('FormData contents:');
+			for (let [key, value] of formData.entries()) {
+				console.log(`${key}:`, value instanceof File ? `${value.name} (${value.size} bytes)` : value);
+			}
+
 			// Gọi API thêm nhạc
-			const response = await TrackService.add({
-				title: newSong.title,
-				duration: durationInSeconds,
-				file_path: files.audio,
-				album: newSong.album === 'none' ? 'none' : newSong.album,
-				artist_id: newSong.artist_id,
-				track_number: null,
-				popularity: 0,
-				preview_url: '',
-				is_active: true,
-			});
+			const response = await TrackService.add(formData);
 
 			if (!response.success) {
-				throw new Error(response.message || 'Response lỗi');
+				throw new Error(response.error || 'Có lỗi xảy ra khi thêm bài hát');
 			}
 
 			alert(`Thêm bài hát ${newSong.title} thành công!`);
 			onSuccess?.();
 			onClose();
 		} catch (error) {
+			console.error('Lỗi khi thêm bài hát:', error);
 			alert(error.message || 'Có lỗi xảy ra khi thêm bài hát');
 		} finally {
 			setIsLoading(false);
@@ -104,7 +120,7 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
 	};
 
 	return (
-		<div className='bg-gray-500 p-6 rounded-lg space-y-4 py-4 text-white w-[400px] absolute top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2 '>
+		<div className='bg-gray-500 p-6 rounded-lg space-y-4 py-4 text-white w-[400px] absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 '>
 			<div className='fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center'>
 				<div className='bg-zinc-900 border border-zinc-700 w-[90%] max-w-md rounded-lg p-6 space-y-5 relative text-white'>
 					{/* Hidden Inputs */}
