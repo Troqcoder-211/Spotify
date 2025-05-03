@@ -16,6 +16,15 @@ const playerSlice = createSlice({
 	name: 'player',
 	initialState,
 	reducers: {
+		clearPlayer: (state) => {
+			state.playlist = [];
+			state.currentTrackIndex = -1;
+			state.playStatus = false;
+			state.currentTime = { minute: 0, second: 0 };
+			state.totalTime = { minute: 0, second: 0 };
+			state.shuffle = false;
+			state.repeatMode = 'off';
+		},
 		// Chức năng tiếp tục phát
 		play: (state) => {
 			if (state.currentTrackIndex === -1) return;
@@ -159,5 +168,6 @@ export const {
 	setRepeatMode,
 	setShuffle,
 	addTrack,
+	clearPlayer,
 } = playerSlice.actions;
 export default playerSlice.reducer;
