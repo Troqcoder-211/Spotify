@@ -13,7 +13,7 @@ const QueueCard = ({ onClose }) => {
 			{/* Header */}
 			<div className='flex justify-between items-center px-4 py-2 border-b border-gray-600'>
 				<h2 className='text-lg font-semibold'>Queue</h2>
-				<button onClick={onClose} className='hover:text-red-500'>
+				<button onClick={onClose} className='hover:text-red-500 cursor-pointer'>
 					<X size={20} />
 				</button>
 			</div>

@@ -10,7 +10,21 @@ const initialState = {
 	shuffle: false, // Ngẫu nhiên
 	// Giá trị có thể là: "off" | "one" | "all"
 	repeatMode: 'off',
+	shuffleList: [],
 };
+
+function createShuffledIndices(length) {
+	const indices = Array.from({ length }, (_, i) => i);
+
+	// Fisher-Yates shuffle
+	for (let i = indices.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[indices[i], indices[j]] = [indices[j], indices[i]];
+	}
+
+	return indices;
+}
+
 // !!! fix next, prev khi repeatmode : one or all
 const playerSlice = createSlice({
 	name: 'player',
@@ -48,7 +62,15 @@ const playerSlice = createSlice({
 			}
 			// bình thường
 			else {
-				state.currentTrackIndex += 1;
+				if (state.shuffle) {
+					if (state.shuffleList.length === 0) {
+						state.shuffleList = createShuffledIndices(state.playlist.length); // Shuffle lại nếu hết
+					}
+					const idx = state.shuffleList.pop();
+					state.currentTrackIndex = idx;
+				} else {
+					state.currentTrackIndex += 1;
+				}
 			}
 
 			state.currentTime = { minute: 0, second: 0 };
@@ -68,7 +90,15 @@ const playerSlice = createSlice({
 				return;
 			}
 			// bình thường
-			state.currentTrackIndex -= 1;
+			if (state.shuffle) {
+				if (state.shuffleList.length === 0) {
+					state.shuffleList = createShuffledIndices(state.playlist.length); // Shuffle lại nếu hết
+				}
+				const idx = state.shuffleList.pop();
+				state.currentTrackIndex = idx;
+			} else {
+				state.currentTrackIndex -= 1;
+			}
 
 			state.currentTime = { minute: 0, second: 0 };
 

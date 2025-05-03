@@ -24,7 +24,11 @@ const Player = () => {
 		currentTrackIndex,
 	} = useSelector((state) => state.player);
 
-	const audioRef = useRef(null); // reference to the audio element
+	const audioRef = useRef(null);
+	const videoRef = useRef(null);
+	const mediaRef = playlist[currentTrackIndex]?.video_path
+		? videoRef
+		: audioRef;
 
 	const [isDragging, setIsDragging] = useState(false);
 
@@ -40,8 +44,8 @@ const Player = () => {
 		const totalSeconds = totalTime.minute * 60 + totalTime.second;
 		const seekToSeconds = Math.floor(percent * totalSeconds);
 
-		if (audioRef.current && playlist[currentTrackIndex]) {
-			audioRef.current.currentTime = seekToSeconds;
+		if (mediaRef.current && playlist[currentTrackIndex]) {
+			mediaRef.current.currentTime = seekToSeconds;
 			dispatch(
 				setCurrentTime({
 					minute: Math.floor(seekToSeconds / 60),
@@ -56,9 +60,9 @@ const Player = () => {
 	}, []);
 
 	useEffect(() => {
-		if (!audioRef.current || !playlist[currentTrackIndex]) return;
+		if (!mediaRef.current || !playlist[currentTrackIndex]) return;
 
-		const audio = audioRef.current;
+		const audio = mediaRef.current;
 		const newTime = currentTime.minute * 60 + currentTime.second;
 		// Chỉ cập nhật nếu khác (tránh loop)
 		if (Math.floor(audio.currentTime) !== newTime) {
@@ -79,10 +83,9 @@ const Player = () => {
 		}
 	}, [playStatus, currentTrackIndex, playlist, currentTime]);
 
-	// Lắng nghe sự kiện onTimeUpdate để cập nhật tến trình bài hát
 	useEffect(() => {
-		const audioElement = audioRef.current;
-		if (!audioElement) return;
+		const mediaElement = mediaRef.current;
+		if (!mediaElement) return;
 
 		const handleEnded = () => {
 			switch (repeatMode) {
@@ -98,27 +101,27 @@ const Player = () => {
 			}
 		};
 		const handleTimeUpdate = () => {
-			const currentSec = Math.floor(audioElement.currentTime);
+			const currentSec = Math.floor(mediaElement.currentTime);
 
-			audioElement.addEventListener('ended', handleEnded);
+			mediaElement.addEventListener('ended', handleEnded);
 
 			const minute = Math.floor(currentSec / 60);
 			const second = currentSec % 60;
 			dispatch(setCurrentTime({ minute, second }));
 		};
 
-		audioElement.addEventListener('timeupdate', handleTimeUpdate);
+		mediaElement.addEventListener('timeupdate', handleTimeUpdate);
 
 		return () => {
-			audioElement.removeEventListener('timeupdate', handleTimeUpdate);
-			audioElement.removeEventListener('ended', handleEnded);
+			mediaElement.removeEventListener('timeupdate', handleTimeUpdate);
+			mediaElement.removeEventListener('ended', handleEnded);
 		};
 	}, [dispatch, totalTime, repeatMode]);
 
 	// progress bar
 	const handleMouseDown = (e) => {
 		setIsDragging(true);
-		handleSeek(e); // Ensure we update the progress when the user starts dragging
+		handleSeek(e);
 	};
 
 	const handleMouseUp = () => {
@@ -158,15 +161,32 @@ const Player = () => {
 						</p>
 					</div>
 				</div>
-				{/* AUDIO */}
-				{/* Audio Player */}
-				<audio
-					ref={audioRef}
-					src={playlist[currentTrackIndex]?.file_path}
-					hidden
-					controls
-					preload='metadata'
-				/>
+				{/* AUDIO / VIDEO */}
+				{/* Audio / Video Player */}
+				<div
+					className={`absolute top-0 right-0 w-[510px] h-[90%] bg-black z-51 transition-all duration-300 ${
+						playlist[currentTrackIndex]?.video_path ? 'block' : 'hidden'
+					}`}
+				>
+					{playlist[currentTrackIndex]?.video_path ? (
+						<video
+							ref={videoRef}
+							src={playlist[currentTrackIndex].video_path}
+							controls
+							autoPlay
+							className='w-full h-[30%] object-cover'
+						/>
+					) : (
+						<audio
+							ref={audioRef}
+							src={playlist[currentTrackIndex]?.file_path}
+							hidden
+							controls
+							preload='metadata'
+						/>
+					)}
+				</div>
+
 				{/* controls  */}
 				<div className='flex flex-col items-center gap-3 m-auto'>
 					<div className='flex gap-y-4 gap-x-7 items-center'>
@@ -235,7 +255,7 @@ const Player = () => {
 							onMouseMove={handleMouseMove}
 							onMouseUp={handleMouseUp}
 							onMouseLeave={handleMouseUp}
-							className=' group w-[60vw] max-w-[800px] bg-[#4d4d4d] rounded-full cursor-pointer relative h-[4px] expand-hitbox '
+							className='group w-[60vw] max-w-[800px] bg-[#4d4d4d] rounded-full cursor-pointer relative h-[4px] expand-hitbox'
 						>
 							<div
 								style={{
