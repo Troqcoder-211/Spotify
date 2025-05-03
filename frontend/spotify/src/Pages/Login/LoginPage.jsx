@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { unwrapResult } from '@reduxjs/toolkit'; // để lấy kết quả từ asyncThunk
+import { toast } from 'react-toastify';
 
 export default function LoginPage() {
 	const dispatch = useDispatch();
@@ -12,19 +13,19 @@ export default function LoginPage() {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 
-	const handleLogin = async (e) => {
+	const handleLogin = (e) => {
 		e.preventDefault();
 		try {
-			const resultAction = await dispatch(loginUser({ email, password }));
+			const resultAction = dispatch(loginUser({ email, password }));
 
 			const data = unwrapResult(resultAction);
 			// ✅ Hiển thị toast thành công
-			alert(`Xin chào ${data?.user?.email || 'người dùng'}!`);
+			toast.success(`Xin chào ${data?.user?.email || 'người dùng'}!`);
 
 			// 👉 Chuyển hướng nếu cần, ví dụ:
 			navigate('/');
 		} catch (err) {
-			alert(err || 'Đăng nhập thất bại'); // Hiển thị thông báo lỗ
+			toast.warning(err || 'Đăng nhập thất bại'); // Hiển thị thông báo lỗ
 		}
 	};
 
