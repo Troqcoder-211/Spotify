@@ -8,10 +8,13 @@ import PrivateRoute from './components/PrivateRoute';
 import NotFoundPage from './Pages/404/NotFoundPage';
 import MusicPlayer from './components/MusicPlayer';
 import PaymentSuccess from './components/PaymentSuccess';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+<<<<<<< HEAD
 import ChatPage from './Pages/Chat/ChatPage';
 
+=======
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+>>>>>>> ea395df6222268f078a1f2b63bc06c1218d202b0
 
 function App() {
 	return (
@@ -32,13 +35,10 @@ function App() {
 				{/* Route cho trang callback thanh toán */}
 				{/* <Route path="/payment-callback" element={<PaymentCallback />} /> */}
 
-			<Route path='/payment-success' element={<PaymentSuccess />} />
+				<Route path='/payment-success' element={<PaymentSuccess />} />
 
-			<Route path='/chat' element={<ChatPage />} />
-			
-
-			{/* Route không tồn tại */}
-			<Route path='*' element={<NotFoundPage />} />
+				{/* Route không tồn tại */}
+				<Route path='*' element={<NotFoundPage />} />
 			</Routes>
 			<ToastContainer
 				position='top-right'
@@ -53,7 +53,21 @@ function App() {
 				theme='dark'
 				// "light" | "dark" | "colored"
 			/>
+<<<<<<< HEAD
+
+			{/* Route cho trang callback thanh toán */}
+			{/* <Route path="/payment-callback" element={<PaymentCallback />} /> */}
+
+			<Route path='/payment-success' element={<PaymentSuccess />} />
+
+			<Route path='/chat' element={<ChatPage />} />
+
+			{/* Route không tồn tại */}
+			<Route path='*' element={<NotFoundPage />} />
+		</Routes>
+=======
 		</>
+>>>>>>> ea395df6222268f078a1f2b63bc06c1218d202b0
 	);
 }
 
