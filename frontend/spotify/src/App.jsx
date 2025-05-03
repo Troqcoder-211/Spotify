@@ -7,6 +7,8 @@ import RegisterPage from './Pages/Login/RegisterPage';
 import PrivateRoute from './components/PrivateRoute';
 import NotFoundPage from './Pages/404/NotFoundPage';
 import MusicPlayer from './components/MusicPlayer';
+import PaymentSuccess from './components/PaymentSuccess';
+
 
 function App() {
 	return (
