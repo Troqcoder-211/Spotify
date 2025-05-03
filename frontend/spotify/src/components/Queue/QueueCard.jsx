@@ -1,7 +1,13 @@
 import React from 'react';
 import { X } from 'lucide-react'; // dùng icon X, bạn có thể thay bằng SVG khác nếu cần
+import SongCard from './SongCard';
+import { useSelector } from 'react-redux';
 
-const QueueCard = ({ nowPlaying, nextUp, onClose }) => {
+const QueueCard = ({ onClose }) => {
+	const { playlist, currentTrackIndex } = useSelector((state) => state.player);
+
+	const listQueue = [...playlist];
+
 	return (
 		<div className='w-[510px] h-[100%] p-1 bg-[#1e1e1e] text-white rounded-lg flex flex-col shadow-lg'>
 			{/* Header */}
@@ -17,31 +23,24 @@ const QueueCard = ({ nowPlaying, nextUp, onClose }) => {
 				{/* Now Playing */}
 				<div>
 					<p className='text-sm text-gray-400 mb-2'>Now playing</p>
-					<SongCard song={nowPlaying} />
+					{playlist[currentTrackIndex] ? (
+						<SongCard song={playlist[currentTrackIndex]} />
+					) : (
+						<p>Không có bài đang phát</p>
+					)}
 				</div>
 
 				{/* Next Up */}
 				<div>
 					<p className='text-sm text-gray-400 mb-2'>Next up</p>
-					<SongCard song={nextUp} />
+					{listQueue && listQueue.length ? (
+						listQueue.map((song) => (
+							<SongCard key={song.track_id} song={song} />
+						))
+					) : (
+						<p>Danh sách phát trống</p>
+					)}
 				</div>
-			</div>
-		</div>
-	);
-};
-
-// SongCard subcomponent
-const SongCard = ({ song }) => {
-	return (
-		<div className='w-full flex items-center gap-4 bg-[#2a2a2a] p-3 rounded'>
-			<img
-				src={song.img_path}
-				alt={song.title}
-				className='w-20 h-20 object-cover rounded'
-			/>
-			<div className='flex flex-col overflow-hidden'>
-				<p className='font-semibold text-white truncate'>{song.title}</p>
-				<p className='text-sm text-gray-400 truncate'>{song.artist}</p>
 			</div>
 		</div>
 	);
