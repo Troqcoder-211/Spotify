@@ -8,6 +8,7 @@ import PrivateRoute from './components/PrivateRoute';
 import NotFoundPage from './Pages/404/NotFoundPage';
 import MusicPlayer from './components/MusicPlayer';
 import PaymentSuccess from './components/PaymentSuccess';
+import ChatPage from './Pages/Chat/ChatPage';
 
 
 function App() {
@@ -29,6 +30,8 @@ function App() {
 			{/* <Route path="/payment-callback" element={<PaymentCallback />} /> */}
 
 			<Route path='/payment-success' element={<PaymentSuccess />} />
+
+			<Route path='/chat' element={<ChatPage />} />
 
 			{/* Route không tồn tại */}
 			<Route path='*' element={<NotFoundPage />} />
