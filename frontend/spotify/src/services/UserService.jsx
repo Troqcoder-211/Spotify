@@ -15,6 +15,19 @@ const UserService = {
         });
     },
 
+    // Kích hoạt user
+    active: async (id) => {
+        return await apiRequest(() => {
+            return api.put(`/users/${id}/active/`);
+        });
+    },
+    // Tạm dừng user    
+    suspend: async (id) => {
+        return await apiRequest(() => {
+            return api.put(`/users/${id}/suspend/`);
+        });
+    },
+
     // Lấy thông tin một user theo ID
     getById: async (id) => {
         return await apiRequest(() => {
