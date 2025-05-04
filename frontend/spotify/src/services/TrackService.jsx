@@ -12,8 +12,18 @@ const TrackService = {
         return await apiRequest(() => api.get(`/tracks/${id}/`));
     },
 
+    // Lấy track theo album id
+    getByAlbum: async (albumId) => {
+        return await apiRequest(() => api.get(`/tracks/album/${albumId}/`));
+    },
+
     // Thêm track mới
     add: async (formData) => {
+
+        // Log formData để debug
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}:`, value instanceof File ? `${value.name} (${value.size} bytes)` : value);
+        }
         try {
             const response = await api.post('/tracks/', formData, {
                 headers: {

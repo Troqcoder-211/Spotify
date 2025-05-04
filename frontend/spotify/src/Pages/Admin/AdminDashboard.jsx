@@ -3,24 +3,33 @@ import { FaMusic, FaCompactDisc, FaUserAlt } from "react-icons/fa";
 import AddSongForm from "./components/AddSongForm";
 import AddAlbumForm from "./components/AddAlbumForm";
 import AddArtistForm from "./components/AddArtistForm";
+import AddUserForm from "./components/AddUserForm";
 import TrackService from "../../services/TrackService";
 import ArtistService from "../../services/ArtistService";
 import ArtistTrackService from "../../services/ArtistTrackService";
+import AlbumService from "../../services/AlbumService";
+import ArtistAlbumService from "../../services/ArtistAlbumService";
+import UserService from "../../services/UserService";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("songs");
   const [showAddSongForm, setShowAddSongForm] = useState(false);
   const [showAddAlbumForm, setShowAddAlbumForm] = useState(false);
   const [showAddArtistForm, setShowAddArtistForm] = useState(false);
+  const [showAddUserForm, setShowAddUserForm] = useState(false);
   const [tracks, setTracks] = useState([]);
   const [artists, setArtists] = useState([]);
+  const [albums, setAlbums] = useState([]);
+  const [users, setUsers] = useState([]);
   const [trackArtists, setTrackArtists] = useState({});
+  const [albumArtists, setAlbumArtists] = useState({});
+  const [albumTotalSongs, setAlbumTotalSongs] = useState({});
 
   const stats = [
     { label: "Total Songs", value: tracks.length, icon: "🎵" },
-    { label: "Total Albums", value: 4, icon: "💿" },
+    { label: "Total Albums", value: albums.length, icon: "💿" },
     { label: "Total Artists", value: artists.length, icon: "👤" },
-    { label: "Total Users", value: 1, icon: "🔊" },
+    { label: "Total Users", value: users.length, icon: "🔊" },
   ];
 
   const loadTracks = async () => {
@@ -35,9 +44,32 @@ const AdminDashboard = () => {
     }
   };
 
+  const loadAlbums = async () => {
+    try {
+      const response = await AlbumService.getAll();
+      if (response.success) {
+        setAlbums(response.data);
+        
+        // Load total songs for each album
+        const totalSongsMap = {};
+        for (const album of response.data) {
+          const tracksResponse = await TrackService.getByAlbum(album.album_id);
+          if (tracksResponse.success) {
+            totalSongsMap[album.album_id] = tracksResponse.data.length;
+          }
+        }
+        setAlbumTotalSongs(totalSongsMap);
+        console.log(albumTotalSongs);
+      }
+    } catch (error) {
+      console.error("Error loading albums:", error);
+      alert("Không thể tải danh sách album");
+    }
+  };
+
   const loadArtists = async () => {
     try {
-      const response = await ArtistService.getAll();
+      const response = await ArtistService.getAllWithStats();
       if (response.success) {
         setArtists(response.data);
       }
@@ -71,10 +103,53 @@ const AdminDashboard = () => {
     }
   };
 
+  const loadAlbumArtists = async () => {
+    try {
+      const artistsMap = {};
+      for (const album of albums) {
+        const response = await ArtistAlbumService.getArtistsByAlbumId(album.album_id);
+        if (response.success) {
+          const artistNames = [];
+          for (const artistAlbum of response.data) {
+            const artistResponse = await ArtistService.getById(artistAlbum.artist);
+            if (artistResponse.success) {
+              artistNames.push(artistResponse.data.name);
+            }
+          }
+          artistsMap[album.album_id] = artistNames.join(', ');
+        } else {
+          artistsMap[album.album_id] = 'Unknown';
+        }
+      }
+      setAlbumArtists(artistsMap);
+    } catch (error) {
+      console.error("Error loading album artists:", error);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const response = await UserService.getAll();
+      if (response.success) {
+        setUsers(response.data);
+      }
+    } catch (error) {
+      console.error("Error loading users:", error);
+      alert("Không thể tải danh sách người dùng");
+    }
+  };
+
   useEffect(() => {
-    loadTracks();
-    loadArtists();
-  }, []);
+    if (activeTab === "songs") {
+      loadTracks();
+    } else if (activeTab === "albums") {
+      loadAlbums();
+    } else if (activeTab === "artists") {
+      loadArtists();
+    } else if (activeTab === "users") {
+      loadUsers();
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (tracks.length > 0) {
@@ -82,16 +157,36 @@ const AdminDashboard = () => {
     }
   }, [tracks]);
 
+  useEffect(() => {
+    if (albums.length > 0) {
+      loadAlbumArtists();
+    }
+  }, [albums]);
+
   const handleDeleteTrack = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa bài hát này?")) {
       try {
         const response = await TrackService.delete(id);
         if (response.success) {
           alert("Xóa bài hát thành công!");
-          loadTracks(); // Tải lại danh sách
+          loadTracks();
         }
       } catch (error) {
         alert("Không thể xóa bài hát");
+      }
+    }
+  };
+
+  const handleDeleteAlbum = async (id) => {
+    if (window.confirm("Bạn có chắc muốn xóa album này?")) {
+      try {
+        const response = await AlbumService.delete(id);
+        if (response.success) {
+          alert("Xóa album thành công!");
+          loadAlbums();
+        }
+      } catch (error) {
+        alert("Không thể xóa album");
       }
     }
   };
@@ -102,10 +197,24 @@ const AdminDashboard = () => {
         const response = await ArtistService.delete(id);
         if (response.success) {
           alert("Xóa nghệ sĩ thành công!");
-          loadArtists(); // Tải lại danh sách
+          loadArtists();
         }
       } catch (error) {
         alert("Không thể xóa nghệ sĩ");
+      }
+    }
+  };
+
+  const handleDeleteUser = async (id) => {
+    if (window.confirm("Bạn có chắc muốn xóa người dùng này?")) {
+      try {
+        const response = await UserService.delete(id);
+        if (response.success) {
+          alert("Xóa người dùng thành công!");
+          loadUsers();
+        }
+      } catch (error) {
+        alert("Không thể xóa người dùng");
       }
     }
   };
@@ -114,6 +223,10 @@ const AdminDashboard = () => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -141,7 +254,13 @@ const AdminDashboard = () => {
               className="fixed inset-0 bg-black opacity-50"
               onClick={() => setShowAddAlbumForm(false)}
             ></div>
-            <AddAlbumForm onClose={() => setShowAddAlbumForm(false)} />
+            <AddAlbumForm 
+              onClose={() => setShowAddAlbumForm(false)}
+              onSuccess={() => {
+                loadAlbums();
+                setShowAddAlbumForm(false);
+              }}
+            />
           </div>
         )}
         {showAddArtistForm && (
@@ -155,6 +274,21 @@ const AdminDashboard = () => {
               onSuccess={() => {
                 loadArtists();
                 setShowAddArtistForm(false);
+              }}
+            />
+          </div>
+        )}
+        {showAddUserForm && (
+          <div>
+            <div
+              className="fixed inset-0 bg-black opacity-50"
+              onClick={() => setShowAddUserForm(false)}
+            ></div>
+            <AddUserForm
+              onClose={() => setShowAddUserForm(false)}
+              onSuccess={() => {
+                loadUsers();
+                setShowAddUserForm(false);
               }}
             />
           </div>
@@ -178,15 +312,13 @@ const AdminDashboard = () => {
           ))}
         </div>
         {/* Song, album and artist section */}
-        <div className="flex bg-g[#2a2a2a] border border-gray-700 rounded-md p-1 mb-4 w-[360px]">
-          {/* Nền xám đậm, bo tròn, padding nhỏ */}
+        <div className="flex bg-[#2a2a2a] border border-gray-700 rounded-md p-1 mb-4 w-[480px]">
           <button
             onClick={() => setActiveTab("songs")}
             className={`flex items-center px-4 py-2 rounded-md w-[120px]
             ${activeTab === "songs" ? "bg-gray-700 text-white" : ""}`}
           >
-            {/* Nút Songs */}
-            <FaMusic className="mr-2" /> {/* Icon nốt nhạc */}
+            <FaMusic className="mr-2" />
             Songs
           </button>
           <button
@@ -194,8 +326,7 @@ const AdminDashboard = () => {
             className={`flex items-center px-4 py-2 rounded-md w-[120px]
             ${activeTab === "albums" ? "bg-gray-700 text-white" : ""}`}
           >
-            {/* Nút Albums */}
-            <FaCompactDisc className="mr-2" /> {/* Icon đĩa CD */}
+            <FaCompactDisc className="mr-2" />
             Albums
           </button>
           <button
@@ -203,9 +334,16 @@ const AdminDashboard = () => {
             className={`flex items-center px-4 py-2 rounded-md w-[120px]
             ${activeTab === "artists" ? "bg-gray-700 text-white" : ""}`}
           >
-            {/* Nút Artists */}
-            <FaUserAlt className="mr-2" /> {/* Icon nghệ sĩ */}
+            <FaUserAlt className="mr-2" />
             Artists
+          </button>
+          <button
+            onClick={() => setActiveTab("users")}
+            className={`flex items-center px-4 py-2 rounded-md w-[120px]
+            ${activeTab === "users" ? "bg-gray-700 text-white" : ""}`}
+          >
+            <FaUserAlt className="mr-2" />
+            Users
           </button>
         </div>
         {/* Khu vực quản lý */}
@@ -216,8 +354,7 @@ const AdminDashboard = () => {
                 <h2 className="text-xl font-bold">🎶 Songs Library</h2>
                 <button
                   className="bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400"
-                  // onClick={() => setShowAddSongForm(!showAddSongForm)}
-                  onClick={() => {loadTrackArtists();}}
+                  onClick={() => setShowAddSongForm(!showAddSongForm)}
                 >
                   + Add Songs
                 </button>
@@ -243,11 +380,64 @@ const AdminDashboard = () => {
                       <td className="py-2">{track.title}</td>
                       <td>{trackArtists[track.track_id] || 'Unknown'}</td>
                       <td>{formatDuration(track.duration)}</td>
-                      <td>{new Date(track.created_at).toLocaleDateString()}</td>
+                      <td>{formatDate(track.created_at)}</td>
                       <td className="text-center">
                         <button 
                           className="bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400"
                           onClick={() => handleDeleteTrack(track.track_id)}
+                        >
+                          Delete
+                        </button>
+                        <button className="bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400">
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {activeTab === "albums" && (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">💿 Albums Library</h2>
+                <button
+                  className="bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400"
+                  onClick={() => setShowAddAlbumForm(!showAddAlbumForm)}
+                  
+                >
+                  + Add Album
+                </button>
+              </div>
+
+              {/* Table danh sách album */}
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="pb-2">Title</th>
+                    <th className="pb-2">Artist</th>
+                    <th className="pb-2">Release Date</th>
+                    <th className="pb-2">Total Songs</th>
+                    <th className="pb-2">Status</th>
+                    <th className="pb-2 text-center">Actions</th> 
+                  </tr>
+                </thead>
+                <tbody>
+                  {albums.map((album, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-gray-700 hover:bg-gray-700"
+                    >
+                      <td className="py-2">{album.title}</td>
+                      <td>{albumArtists[album.album_id] || 'Unknown'}</td>
+                      <td>{formatDate(album.release_date)}</td>
+                      <td>{albumTotalSongs[album.album_id] || 0}</td>
+                      <td>{album.is_active ? "Active" : "Inactive"}</td>
+                      <td className="text-center">
+                        <button 
+                          className="bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400"
+                          onClick={() => handleDeleteAlbum(album.album_id)}
                         >
                           Delete
                         </button>
@@ -299,6 +489,59 @@ const AdminDashboard = () => {
                         <button 
                           className="bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400"
                           onClick={() => handleDeleteArtist(artist.id)}
+                        >
+                          Delete
+                        </button>
+                        <button className="bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400">
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {activeTab === "users" && (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">👤 Users Management</h2>
+                <button
+                  className="bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400"
+                  onClick={() => setShowAddUserForm(true)}
+                >
+                  + Add User
+                </button>
+              </div>
+
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="pb-2">Username</th>
+                    <th className="pb-2">Email</th>
+                    <th className="pb-2">Full Name</th>
+                    <th className="pb-2">Account Type</th>
+                    <th className="pb-2">Country</th>
+                    <th className="pb-2">Join Date</th>
+                    <th className="pb-2 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-gray-700 hover:bg-gray-700"
+                    >
+                      <td className="py-2">{user.username}</td>
+                      <td>{user.email}</td>
+                      <td>{user.full_name || '-'}</td>
+                      <td>{user.account_type}</td>
+                      <td>{user.country || '-'}</td>
+                      <td>{formatDate(user.created_at)}</td>
+                      <td className="text-center">
+                        <button
+                          className="bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400"
+                          onClick={() => handleDeleteUser(user.id)}
                         >
                           Delete
                         </button>
