@@ -9,7 +9,7 @@ const QueueCard = ({ onClose }) => {
 	const listQueue = [...playlist];
 
 	return (
-		<div className='w-[510px] h-[100%] p-1 bg-[#1e1e1e] text-white rounded-lg flex flex-col shadow-lg'>
+		<div className='w-[460px] h-[100%] p-1 bg-[#1e1e1e] text-white rounded-lg flex flex-col shadow-lg'>
 			{/* Header */}
 			<div className='flex justify-between items-center px-4 py-2 border-b border-gray-600'>
 				<h2 className='text-lg font-semibold'>Queue</h2>

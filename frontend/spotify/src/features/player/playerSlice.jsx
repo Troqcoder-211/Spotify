@@ -80,6 +80,7 @@ const playerSlice = createSlice({
 				minute: Math.floor(durationInSec / 60),
 				second: durationInSec % 60,
 			};
+			state.playStatus = true;
 		},
 		previousTrack: (state) => {
 			// danh sách trống
@@ -108,6 +109,7 @@ const playerSlice = createSlice({
 				minute: Math.floor(durationInSec / 60),
 				second: durationInSec % 60,
 			};
+			state.playStatus = true;
 		},
 		// Chức năng phát 1 bài dựa trên index
 		selectTrack: (state, action) => {

@@ -15,6 +15,8 @@ export default function Modal() {
 		}
 	};
 
+	if (isAuthenticated) return;
+
 	return (
 		isOpen && (
 			<div
@@ -34,24 +36,22 @@ export default function Modal() {
 						<button
 							onClick={() => {
 								setIsOpen(false);
-								navigate('/premium');
+								navigate('/register');
 							}}
 							className='bg-green-500 text-white font-semibold px-6 py-2 rounded-full mt-4 hover:tranform hover:scale-105 cursor-pointer'
 						>
 							Đăng ký miễn phí
 						</button>
 
-						{!isAuthenticated && (
-							<p className='text-gray-400 text-sm mt-4'>
-								Bạn đã có tài khoản?{' '}
-								<span
-									onClick={() => navigate('/login')}
-									className='text-white font-semibold cursor-pointer hover:text-green-500'
-								>
-									Đăng nhập
-								</span>
-							</p>
-						)}
+						<p className='text-gray-400 text-sm mt-4'>
+							Bạn đã có tài khoản?{' '}
+							<span
+								onClick={() => navigate('/login')}
+								className='text-white font-semibold cursor-pointer hover:text-green-500'
+							>
+								Đăng nhập
+							</span>
+						</p>
 					</div>
 					<button
 						onClick={() => setIsOpen(false)}

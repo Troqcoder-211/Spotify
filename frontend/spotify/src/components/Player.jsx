@@ -11,6 +11,7 @@ import {
 	setShuffle,
 } from '../features/player/playerSlice';
 import QueueCard from './Queue/QueueCard';
+import VideoPlayer from './Video/VideoPlayer';
 
 const Player = () => {
 	const dispatch = useDispatch();
@@ -163,29 +164,21 @@ const Player = () => {
 				</div>
 				{/* AUDIO / VIDEO */}
 				{/* Audio / Video Player */}
-				<div
-					className={`absolute top-0 right-0 w-[510px] h-[90%] bg-black z-51 transition-all duration-300 ${
-						playlist[currentTrackIndex]?.video_path ? 'block' : 'hidden'
-					}`}
-				>
-					{playlist[currentTrackIndex]?.video_path ? (
-						<video
-							ref={videoRef}
-							src={playlist[currentTrackIndex].video_path}
-							controls
-							autoPlay
-							className='w-full h-[30%] object-cover'
-						/>
-					) : (
-						<audio
-							ref={audioRef}
-							src={playlist[currentTrackIndex]?.file_path}
-							hidden
-							controls
-							preload='metadata'
-						/>
-					)}
-				</div>
+
+				{playlist[currentTrackIndex]?.video_path ? (
+					<VideoPlayer
+						videoRef={videoRef}
+						videoSrc={playlist[currentTrackIndex].video_path}
+					/>
+				) : (
+					<audio
+						ref={audioRef}
+						src={playlist[currentTrackIndex]?.file_path}
+						hidden
+						controls
+						preload='metadata'
+					/>
+				)}
 
 				{/* controls  */}
 				<div className='flex flex-col items-center gap-3 m-auto'>

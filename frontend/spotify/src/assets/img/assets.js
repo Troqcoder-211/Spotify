@@ -26,6 +26,8 @@ import arrow_right from './right_arrow.png';
 import arrow_left from './left_arrow.png';
 import spotify_logo from './spotify_logo.png';
 import clock_icon from './clock_icon.png';
+import hide_vid from './hide_vid.png';
+import show_vid from './show_vid.png';
 import vnpay from './vnpay.jpg';
 import img1 from './img1.jpg';
 import img2 from './img2.jpg';
@@ -79,7 +81,9 @@ export const assets = {
 	spotify_logo,
 	clock_icon,
 	sontung,
+	show_vid,
 	vnpay,
+	hide_vid,
 };
 
 export const albumsData = [
