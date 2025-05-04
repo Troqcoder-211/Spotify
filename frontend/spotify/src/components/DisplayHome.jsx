@@ -21,7 +21,7 @@ const DisplayHome = () => {
 	const [songs, setSongs] = useState([]);
 
 	const getAllSongs = async () => {
-		const res = await TrackService.getAll();
+		const res = await TrackService.getRecommended(7);
 		if (res.success) {
 			setSongs(res.data);
 		} else {
@@ -38,7 +38,7 @@ const DisplayHome = () => {
 
 			{/* Featured Charts */}
 			<div className='mb-4'>
-				<h1 className='my-5 dont-bold text-2xl'>Featured Charts</h1>
+				<h1 className='my-5 font-bold text-2xl'>Featured Charts</h1>
 				<div className='flex overflow-auto'>
 					{albumsData.map((item, index) => {
 						return <AlbumItem key={index} props={item} />;
@@ -47,7 +47,7 @@ const DisplayHome = () => {
 			</div>
 			{/* Today's biggest hits */}
 			<div className='mb-4'>
-				<h1 className='my-5 dont-bold text-2xl'>Today's biggest hits</h1>
+				<h1 className='my-5 font-bold text-2xl'>Recommended for today</h1>
 				<div className='flex overflow-auto'>
 					{songs.map((item, index) => {
 						return <SongItem key={index} props={item} />;
@@ -57,7 +57,7 @@ const DisplayHome = () => {
 
 			{/* Popular artists */}
 			<div className='mb-4'>
-				<h1 className='my-5 dont-bold text-2xl'>Nghệ sĩ phổ biến</h1>
+				<h1 className='my-5 font-bold text-2xl'>Nghệ sĩ phổ biến</h1>
 				<div className='flex overflow-auto'>
 					{artists.map((item, index) => {
 						return <SingerItem key={index} props={item} />;

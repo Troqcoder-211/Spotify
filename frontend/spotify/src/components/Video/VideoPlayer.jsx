@@ -1,12 +1,15 @@
 // src/components/VideoPlayer.jsx
 import React, { useState } from 'react';
 import { assets } from '../../assets/img/assets';
+import { useDispatch } from 'react-redux';
+import { pause, play } from '../../features/player/playerSlice';
 
 const VideoPlayer = ({ videoRef, videoSrc, title = 'Đang phát video' }) => {
 	const [isVisible, setIsVisible] = useState(true);
-
+	const dispatch = useDispatch();
 	const togglePlayer = () => {
 		setIsVisible(!isVisible);
+		isVisible ? dispatch(pause()) : dispatch(play());
 	};
 
 	if (!isVisible) {
