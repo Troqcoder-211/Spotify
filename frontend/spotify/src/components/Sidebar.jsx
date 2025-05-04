@@ -7,6 +7,7 @@ import FolderMusic from './FolderMusicItem';
 import AlbumLibrary from './AlbumLibraryItem';
 import ArtisLibraryItem from './ArtisLibraryItem';
 
+
 import { assets } from '../assets/img/assets';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { LuLibrary } from 'react-icons/lu';
@@ -15,11 +16,13 @@ import { PiMusicNotesPlus } from 'react-icons/pi';
 import { AiOutlineFolder } from 'react-icons/ai';
 
 import FolderService from '../services/FolderService';
+import PlaylistSerVice from '../services/PlaylistService';
 import { useSelector } from 'react-redux';
 
 const Sidebar = () => {
 	const { isAuthenticated } = useSelector((state) => state.auth);
-	const [playlist, setPlaylist] = useState([]);
+
+
 	const [music, setMusic] = useState([
 		{
 			id: 1,
@@ -51,9 +54,28 @@ const Sidebar = () => {
 		setFolders(res.data);
 	};
 
+	
+	const [playlist, setPlaylist] = useState([]);
+
+	const getAllPlaylists = async () => {
+		if (!isAuthenticated) return;
+
+		const res = await PlaylistSerVice.getAllPlayLists();
+		// console.log('playlist?>>>>>>>>>>', res);
+		setPlaylist(res.data);
+	};
+
+
 	useEffect(() => {
 		getAllFolders();
 	}, []);
+
+	useEffect(() => {
+		getAllPlaylists();
+	}, []);
+
+	
+
 
 	const [createFolder, setCreateFolder] = useState(false);
 
@@ -224,7 +246,21 @@ const Sidebar = () => {
 								<FolderMusic key={index} name={folder.title} />
 							))
 						)}
-						{/* <FolderMusic /> */}
+
+						{/* {playlist.length===0 ? (
+							<p>Không có playlist nào.</p>
+						) : (
+							playlist.map((list, index) => {
+								return (
+									<AlbumLibrary
+									  key={index}
+									  name={list.description}
+									  imageUrl={list.cover_img_url}
+									/>
+								  );
+							})
+						)} */}
+				
 
 						{/* {album.map((album, index) => (
               <AlbumLibrary props={album} key={index} />
