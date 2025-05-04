@@ -5,287 +5,122 @@ import UsersList from "./components/UserList";
 import ChatHeader from "./components/ChatHeader";
 import MessageInput from "./components/MessageInput";
 import Navbar from "../../components/Navbar";
+import { useSelector } from "react-redux";
+
+
+import Conversation from "../../services/ConversationService";
 
 const ChatPage = () => {
-  // Dữ liệu giả lập cho user hiện tại, danh sách người dùng và tin nhắn
-  const [currentUser] = useState({
-    id: "user1",
-    fullName: "Alice",
-    imageUrl: "https://i.pravatar.cc/150?img=1",
-  });
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
-  const [users, setUsers] = useState([
-    {
-      _id: "1",
-      clerkId: "user2",
-      fullName: "Bob",
-      imageUrl: "https://i.pravatar.cc/150?img=2",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      _id: "2",
-      clerkId: "user3",
-      fullName: "Charlie",
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-  ]);
+  const [users, setUsers] = useState([]);
 
-  console.log(setUsers);
+  // console.log(setUsers);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
+
+  useEffect(() => {
+  const fetchConversations = async () => {
+    try {
+      setIsLoadingUsers(true);
+      const response = await Conversation.getAllConversation();
+
+      // console.log("API response:", response); // log kiểm tra
+
+      const data = response?.data;
+
+      if (!Array.isArray(data)) {
+        console.error("Expected an array, but got:", data);
+        return;
+      }
+
+      const formattedUsers = data.map((conv) => ({
+        _id: conv.conversation_id.toString(),
+        clerkId: conv.conversation_id.toString(),
+        fullName: conv.name || "Unknown",
+        imageUrl: `https://i.pravatar.cc/150?u=${conv.conversation_id}`,
+      }));
+
+      setUsers(formattedUsers);
+    } catch (error) {
+      console.error("Failed to fetch conversations:", error);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  fetchConversations();
+}, []);
+
 
   // Giả lập danh sách user online (sử dụng Set)
   const onlineUsers = new Set(["user2"]);
 
   // Giả lập fetchUsers: thay cho việc gọi API, ta chỉ delay 1s rồi tắt loading
   useEffect(() => {
-    setIsLoadingUsers(true);
-    const timer = setTimeout(() => {
-      setIsLoadingUsers(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchMessages = async () => {
+      if (!selectedUser) {
+        setMessages([]);
+        return;
+      }
+  
+      const response = await Conversation.getAllMessageByConversation({
+        id: selectedUser.clerkId, // clerkId chính là conversation_id
+      });
 
-  // Khi chọn user, giả lập fetch messages (sau 0.5 giây)
-  useEffect(() => {
-    if (selectedUser) {
-      const timer = setTimeout(() => {
-        setMessages([
-          {
-            _id: "m1",
-            senderId: currentUser.id,
-            content: "Hi there!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            _id: "m2",
-            senderId: selectedUser.clerkId,
-            content: "Hello!",
-            createdAt: new Date().toISOString(),
-          },
-        ]);
-      }, 500);
-      return () => clearTimeout(timer);
-    } else {
-      setMessages([]);
-    }
-  }, [selectedUser, currentUser.id]);
+      // console.log(selectedUser.clerkId);
+      // console.log(response);
+  
+      if (response.success && Array.isArray(response.data)) {
+        const formattedMessages = response.data.map((msg) => ({
+          _id: msg.message_id.toString(),
+          senderId: msg.sender.toString(),
+          content: msg.content,
+          createdAt: msg.sent_at,
+        }));
+  
+        setMessages(formattedMessages);
+      } else {
+        console.error("Không thể load messages:", response);
+        setMessages([]);
+      }
+    };
+  
+    fetchMessages();
+  }, [selectedUser]);
+  
 
   // Hàm gửi tin nhắn
-  const handleSendMessage = (content) => {
-    const newMsg = {
-      _id: Date.now().toString(),
-      senderId: currentUser.id,
-      content,
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, newMsg]);
+  const handleSendMessage = async (content) => {
+    console.log('hi');
+    if (!selectedUser) return;
+  
+    try {
+      // Gửi tin nhắn tới server
+      const response = await Conversation.sendMessageByUserInConversation({
+        id: selectedUser.clerkId, // đây là conversation_id
+        content: content,
+      });
+  
+      if (response.success) {
+        const newMsg = {
+          _id: Date.now().toString(), // hoặc lấy từ response nếu có
+          senderId: user.id,
+          content,
+          createdAt: new Date().toISOString(),
+        };
+        setMessages((prev) => [...prev, newMsg]);
+      } else {
+        console.error("Gửi tin nhắn thất bại:", response);
+      }
+    } catch (error) {
+      console.error("Lỗi khi gửi tin nhắn:", error);
+    }
   };
-
+  
+console.log(messages)
   return (
     <>
       <Navbar />
@@ -311,34 +146,21 @@ const ChatPage = () => {
                 {/* Khu vực cuộn danh sách tin nhắn */}
                 <div className="h-[calc(100vh-340px)] overflow-y-auto">
                   <div className="p-4 space-y-4">
-                    {messages.map((message) => (
+                  {messages.map((message) => {
+                    const senderId = message.senderId?.toString();
+                    const currentUserId = user?.id?.toString();
+                    const isCurrentUser = senderId === currentUserId;
+
+                    // console.log("senderId:", senderId, "currentUserId:", currentUserId, "==>", isCurrentUser);
+
+                    return (
                       <div
                         key={message._id}
-                        className={`flex items-start gap-3 ${
-                          message.senderId === currentUser.id
-                            ? "flex-row-reverse"
-                            : ""
-                        }`}
+                        className={`flex items-start gap-3 ${!isCurrentUser ? "flex-row-reverse" : ""}`}
                       >
-                        {/* <Avatar
-                          src={
-                            message.senderId === currentUser.id
-                              ? currentUser.imageUrl
-                              : selectedUser.imageUrl
-                          }
-                          alt="avatar"
-                          fallback={
-                            message.senderId === currentUser.id
-                              ? currentUser.fullName[0]
-                              : selectedUser.fullName[0]
-                          }
-                          className="w-10 h-10"
-                        /> */}
                         <div
                           className={`rounded-lg p-3 max-w-[70%] ${
-                            message.senderId === currentUser.id
-                              ? "bg-green-500"
-                              : "bg-zinc-800"
+                            !isCurrentUser ? "bg-green-500" : "bg-zinc-800"
                           }`}
                         >
                           <p className="text-sm">{message.content}</p>
@@ -347,11 +169,18 @@ const ChatPage = () => {
                           </span>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
+
                   </div>
                 </div>
 
-                <MessageInput onSend={handleSendMessage} />
+                <MessageInput 
+                  selectedUser={selectedUser}
+                  // user={user}
+                  conversationId={selectedUser?.clerkId}
+                  onSend={handleSendMessage}
+                />
               </>
             ) : (
               <NoConversationPlaceholder />
