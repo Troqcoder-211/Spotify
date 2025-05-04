@@ -68,14 +68,15 @@ python manage.py runserver 8888
 ```
 
 ✅ Yêu cầu hệ thống
-Python 3.8+
-pip
+   - Python 3.8+
+   - pip
+
 📁 Cấu trúc thư mục (tham khảo)
-Spotify/backend/
-└──────── backend/
-           ├── backend/             # Django project
-           ├── api/                 # Ứng dụng chính
-           ├── venv/                # Môi trường ảo
-           ├── requirements.txt     # Danh sách thư viện
-           ├── .env.example         # Mẫu file môi trường
-           └── README.md            # File hướng dẫn này
+- Spotify/backend/
+  └──────── backend/
+             ├── backend/             # Django project
+             ├── api/                 # Ứng dụng chính
+             ├── venv/                # Môi trường ảo
+             ├── requirements.txt     # Danh sách thư viện
+             ├── .env.example         # Mẫu file môi trường
+             └── README.md            # File hướng dẫn này
