@@ -73,6 +73,7 @@ python manage.py runserver 8888
 
 📁 Cấu trúc thư mục (tham khảo)
 - Spotify/backend/
+  
   └──────── backend/
            
             ├── backend/             # Django project
