@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import TokenService from "../../../services/TokenService";
 import WebSocketService from "../../../services/WebSocketService";
@@ -7,6 +7,7 @@ const MessageInput = ({ selectedUser, conversationId, onSend }) => {
   const { user } = useSelector((state) => state.auth);
   const [newMessage, setNewMessage] = useState("");
   const [error, setError] = useState(null);
+  const [isSending, setIsSending] = useState(false);
 
   const accessToken = user?.accessToken || TokenService.getAccessToken();
 
@@ -16,34 +17,48 @@ const MessageInput = ({ selectedUser, conversationId, onSend }) => {
       return;
     }
 
-    // Kết nối WebSocket
-    WebSocketService.connect(
-      conversationId,
-      accessToken,
-      (message, senderUsername, senderId) => {
-        onSend(message, senderUsername, senderId); // Cập nhật UI
-      },
-      (err) => {
-        setError(err); // Lưu lỗi để hiển thị
-      },
-      () => {
-        setError(null); // Xóa lỗi khi kết nối thành công
-      },
-      (event) => {
-        setError(`Kết nối WebSocket bị đóng: ${event.reason || "Không xác định"}`);
-      }
-    );
+    if (!WebSocketService.isConnected()) {
+      WebSocketService.connect(
+        conversationId,
+        accessToken,
+        (message, senderUsername, senderId) => {
+          // Không lọc senderId nữa, để server broadcast xử lý
+          onSend(message, senderUsername, senderId);
+        },
+        (err) => {
+          setError(err);
+        },
+        () => {
+          setError(null);
+        },
+        // (event) => {
+        //   setError(`Kết nối WebSocket bị đóng: ${event.reason || "Không xác định"}`);
+        // }
+      );
+    }
 
-    // Ngắt kết nối khi component unmount
     return () => {
-      WebSocketService.disconnect();
+      if (WebSocketService.isConnected()) {
+        WebSocketService.disconnect();
+      }
     };
   }, [conversationId, accessToken, onSend]);
 
-  const handleSend = () => {
-    if (!selectedUser || !user || !newMessage.trim()) return;
+  const handleSend = useCallback(() => {
+    if (isSending || !selectedUser || !user || !newMessage.trim()) return;
+
+    setIsSending(true);
+    console.log("Gửi tin nhắn:", newMessage);
     WebSocketService.sendMessage(conversationId, newMessage);
     setNewMessage("");
+    setTimeout(() => setIsSending(false), 500);
+  }, [isSending, selectedUser, user, newMessage, conversationId]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.repeat) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
@@ -55,12 +70,12 @@ const MessageInput = ({ selectedUser, conversationId, onSend }) => {
           placeholder="Nhập tin nhắn"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          onKeyDown={handleKeyDown}
           className="bg-zinc-800 border-none flex-1 p-2 rounded-md text-white placeholder:text-zinc-400"
         />
         <button
           onClick={handleSend}
-          disabled={!newMessage.trim()}
+          disabled={isSending || !newMessage.trim()}
           className="bg-blue-500 text-white px-3 py-2 rounded-md disabled:opacity-50 transition-colors"
         >
           Gửi
