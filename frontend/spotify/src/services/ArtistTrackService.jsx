@@ -9,7 +9,6 @@ const ArtistTrackService = {
             if (response.data.success) {
                 // Lấy danh sách tên nghệ sĩ từ response
                 const artists = response.data.data.map(artistTrack => artistTrack.artist); 
-                console.log(artists);
                 return {
                     success: true,
                     data: artists

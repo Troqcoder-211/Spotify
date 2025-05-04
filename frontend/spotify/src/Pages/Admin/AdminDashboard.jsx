@@ -140,16 +140,11 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    if (activeTab === "songs") {
-      loadTracks();
-    } else if (activeTab === "albums") {
-      loadAlbums();
-    } else if (activeTab === "artists") {
-      loadArtists();
-    } else if (activeTab === "users") {
-      loadUsers();
-    }
-  }, [activeTab]);
+    loadTracks();
+    loadAlbums();
+    loadArtists();
+    loadUsers();
+  }, []);
 
   useEffect(() => {
     if (tracks.length > 0) {
@@ -205,16 +200,30 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteUser = async (id) => {
-    if (window.confirm("Bạn có chắc muốn xóa người dùng này?")) {
+  const handleSuspendUser = async (id) => {
+    if (window.confirm("Bạn có chắc muốn tạm dừng người dùng này?")) {
       try {
-        const response = await UserService.delete(id);
-        if (response.success) {
-          alert("Xóa người dùng thành công!");
+        const response = await UserService.suspend(id);
+        if (response.success) { 
+          alert("Tạm dừng người dùng thành công!");
           loadUsers();
         }
       } catch (error) {
-        alert("Không thể xóa người dùng");
+        alert("Không thể tạm dừng người dùng");
+      }
+    }
+  };
+
+  const handleActiveUser = async (id) => {
+    if (window.confirm("Bạn có chắc muốn kích hoạt người dùng này?")) {
+      try {
+        const response = await UserService.active(id);
+        if (response.success) {
+          alert("Kích hoạt người dùng thành công!");
+          loadUsers(); 
+        }
+      } catch (error) {
+        alert("Không thể kích hoạt người dùng");
       }
     }
   };
@@ -523,6 +532,7 @@ const AdminDashboard = () => {
                     <th className="pb-2">Account Type</th>
                     <th className="pb-2">Country</th>
                     <th className="pb-2">Join Date</th>
+                    <th className="pb-2">Status</th>
                     <th className="pb-2 text-center">Actions</th>
                   </tr>
                 </thead>
@@ -538,16 +548,23 @@ const AdminDashboard = () => {
                       <td>{user.account_type}</td>
                       <td>{user.country || '-'}</td>
                       <td>{formatDate(user.created_at)}</td>
+                      <td>{user.is_active ? "Active" : "Suspended"}</td>
                       <td className="text-center">
-                        <button
-                          className="bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          Delete
-                        </button>
-                        <button className="bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400">
-                          Edit
-                        </button>
+                        {user.is_active ? (
+                          <button
+                            className="bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400"
+                            onClick={() => handleSuspendUser(user.id)}
+                          >
+                            Suspend
+                          </button>
+                        ) : (
+                          <button
+                            className="bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400"
+                            onClick={() => handleActiveUser(user.id)}
+                          >
+                            Active
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

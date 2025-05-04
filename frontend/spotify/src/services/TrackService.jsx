@@ -29,9 +29,6 @@ const TrackService = {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 },
-				timeout: 100000,
-				maxContentLength: Infinity,
-				maxBodyLength: Infinity
             });
 
             return {
