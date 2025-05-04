@@ -27,10 +27,10 @@ const SongItem = ({ props }) => {
 	return (
 		<div
 			onClick={handleClick}
-			className='min-w-[180px] w-[180px] h-[260px] p-3 rounded-lg bg-[#1e1e1e] cursor-pointer hover:bg-[#ffffff26] flex flex-col items-center mr-3'
+			className='min-w-[200px] w-[200px] h-[260px] transition-all duration-150 p-3 rounded-lg bg-[#1e1e1e] cursor-pointer hover:bg-[#ffffff26] flex flex-col items-center mr-3'
 		>
 			<img
-				className='w-[160px] h-[160px] rounded object-cover'
+				className='w-full h-[160px] rounded object-cover'
 				src={props.img_path || import.meta.env.VITE_IMG_DEFAULT}
 				alt={props.title}
 			/>
