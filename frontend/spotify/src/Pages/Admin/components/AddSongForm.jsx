@@ -1,12 +1,17 @@
 import React, { useRef, useState, useEffect } from 'react';
 import TrackService from '../../../services/TrackService';
 import ArtistService from '../../../services/ArtistService';
+import AlbumService from '../../../services/AlbumService';
+import ArtistAlbumService from '../../../services/ArtistAlbumService';
 
-const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
+const AddSongForm = ({ onClose, onSuccess }) => {
 	const imageInputRef = useRef(null);
 	const audioInputRef = useRef(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [artistSuggestions, setArtistSuggestions] = useState([]);
+	const [artistAlbums, setArtistAlbums] = useState([]);
+	const [albumDetails, setAlbumDetails] = useState([]); // Thêm state để lưu thông tin chi tiết album
+	const [albumTracks, setAlbumTracks] = useState({}); // Lưu số lượng track trong mỗi album
 
 	const [files, setFiles] = useState({ image: null, audio: null });
 	const [newSong, setNewSong] = useState({
@@ -44,14 +49,56 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
 		return () => clearTimeout(delayDebounceFn);
 	}, [newSong.artist]);
 
-	const handleArtistSelect = (artist) => {
-		if (artist)
+	const getAlbumTrackCount = async (albumId) => {
+		try {
+			const tracksResponse = await TrackService.getByAlbum(albumId);
+			if (tracksResponse.success) {
+				setAlbumTracks(prev => ({
+					...prev,
+					[albumId]: tracksResponse.data.length
+				}));
+			}
+		} catch (error) {
+			console.error('Lỗi khi lấy số lượng track:', error);
+		}
+	};
+
+	const handleArtistSelect = async (artist) => {
+		if (artist) {
 			setNewSong((prev) => ({
 				...prev,
 				artist: artist.name,
 				artist_id: artist.artist_id,
+				album: '', // Reset album selection
 			}));
-		setArtistSuggestions([]);
+			setArtistSuggestions([]);
+
+			// Fetch albums for selected artist
+			try {
+				const artistAlbumsResponse = await ArtistAlbumService.getAlbumsByArtistId(artist.artist_id);
+				if (artistAlbumsResponse.success) {
+					setArtistAlbums(artistAlbumsResponse.data);
+					
+					// Lấy thông tin chi tiết cho từng album
+					const albumDetailsPromises = artistAlbumsResponse.data.map(async (artistAlbum) => {
+						const albumResponse = await AlbumService.getById(artistAlbum.album);
+						if (albumResponse.success) {
+							// Lấy số lượng track trong album
+							await getAlbumTrackCount(artistAlbum.album);
+							return albumResponse.data;
+						}
+						return null;
+					});
+					
+					const albumDetailsResults = await Promise.all(albumDetailsPromises);
+					setAlbumDetails(albumDetailsResults.filter(album => album !== null));
+				}
+			} catch (error) {
+				console.error('Lỗi khi lấy danh sách album:', error);
+				setArtistAlbums([]);
+				setAlbumDetails([]);
+			}
+		}
 	};
 
 	const handleSubmit = async (e) => {
@@ -80,7 +127,11 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
 			formData.append('duration', durationInSeconds);
 			formData.append('artist_id', newSong.artist_id);
 			formData.append('album', newSong.album === 'none' ? 'none' : newSong.album);
-			formData.append('track_number', newSong.album === 'none' ? 'null' : newSong.track_number);
+			
+			// Tự động tăng track_number
+			const nextTrackNumber = newSong.album === 'none' ? null : (albumTracks[newSong.album] + 1);
+			formData.append('track_number', nextTrackNumber);
+			
 			formData.append('popularity', '0');
 			formData.append('preview_url', '');
 			formData.append('is_active', 'true');
@@ -94,13 +145,7 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
 			if (files.image) {
 				formData.append('img_path', files.image);
 			}
-
-			// Log formData để debug
-			console.log('FormData contents:');
-			for (let [key, value] of formData.entries()) {
-				console.log(`${key}:`, value instanceof File ? `${value.name} (${value.size} bytes)` : value);
-			}
-
+      
 			// Gọi API thêm nhạc
 			const response = await TrackService.add(formData);
 
@@ -208,6 +253,8 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
 									artist: e.target.value,
 									artist_id: '',
 								}));
+								setArtistAlbums([]); // Clear albums when artist changes
+								setAlbumDetails([]); // Clear album details when artist changes
 							}}
 							placeholder='Nhập tên nghệ sĩ để tìm kiếm...'
 							className='w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded'
@@ -240,7 +287,7 @@ const AddSongForm = ({ albums = [], onClose, onSuccess }) => {
 						>
 							<option value=''>-- Select Album --</option>
 							<option value='none'>No Album (Single)</option>
-							{albums.map((album) => (
+							{albumDetails.map((album) => (
 								<option key={album.album_id} value={album.album_id}>
 									{album.title}
 								</option>
