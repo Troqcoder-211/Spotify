@@ -34,7 +34,10 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 			if (response.success) {
 				// Lọc ra những nghệ sĩ chưa được chọn
 				const filteredArtists = response.data.filter(
-					artist => !selectedArtists.find(selected => selected.artist_id === artist.artist_id)
+					(artist) =>
+						!selectedArtists.find(
+							(selected) => selected.artist_id === artist.artist_id
+						)
 				);
 				setArtistSuggestions(filteredArtists);
 			}
@@ -58,9 +61,9 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 		try {
 			const tracksResponse = await TrackService.getByAlbum(albumId);
 			if (tracksResponse.success) {
-				setAlbumTracks(prev => ({
+				setAlbumTracks((prev) => ({
 					...prev,
-					[albumId]: tracksResponse.data.length
+					[albumId]: tracksResponse.data.length,
 				}));
 			}
 		} catch (error) {
@@ -71,28 +74,35 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 	const handleArtistSelect = async (artist) => {
 		if (artist) {
 			// Thêm nghệ sĩ vào danh sách đã chọn
-			setSelectedArtists(prev => [...prev, artist]);
-			setNewSong(prev => ({ ...prev, artist: '' }));
+			setSelectedArtists((prev) => [...prev, artist]);
+			setNewSong((prev) => ({ ...prev, artist: '' }));
 			setArtistSuggestions([]);
 
 			// Nếu là nghệ sĩ đầu tiên (nghệ sĩ chính), lấy danh sách album
 			if (selectedArtists.length === 0) {
 				try {
-					const artistAlbumsResponse = await ArtistAlbumService.getAlbumsByArtistId(artist.artist_id);
+					const artistAlbumsResponse =
+						await ArtistAlbumService.getAlbumsByArtistId(artist.artist_id);
 					if (artistAlbumsResponse.success) {
 						setArtistAlbums(artistAlbumsResponse.data);
-						
-						const albumDetailsPromises = artistAlbumsResponse.data.map(async (artistAlbum) => {
-							const albumResponse = await AlbumService.getById(artistAlbum.album);
-							if (albumResponse.success) {
-								await getAlbumTrackCount(artistAlbum.album);
-								return albumResponse.data;
+
+						const albumDetailsPromises = artistAlbumsResponse.data.map(
+							async (artistAlbum) => {
+								const albumResponse = await AlbumService.getById(
+									artistAlbum.album
+								);
+								if (albumResponse.success) {
+									await getAlbumTrackCount(artistAlbum.album);
+									return albumResponse.data;
+								}
+								return null;
 							}
-							return null;
-						});
-						
+						);
+
 						const albumDetailsResults = await Promise.all(albumDetailsPromises);
-						setAlbumDetails(albumDetailsResults.filter(album => album !== null));
+						setAlbumDetails(
+							albumDetailsResults.filter((album) => album !== null)
+						);
 					}
 				} catch (error) {
 					console.error('Lỗi khi lấy danh sách album:', error);
@@ -104,10 +114,12 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 	};
 
 	const removeArtist = (artistId) => {
-		setSelectedArtists(prev => prev.filter(artist => artist.artist_id !== artistId));
+		setSelectedArtists((prev) =>
+			prev.filter((artist) => artist.artist_id !== artistId)
+		);
 		if (selectedArtists.length === 1) {
 			// Nếu xóa nghệ sĩ chính, reset album
-			setNewSong(prev => ({ ...prev, album: '' }));
+			setNewSong((prev) => ({ ...prev, album: '' }));
 			setArtistAlbums([]);
 			setAlbumDetails([]);
 		}
@@ -137,17 +149,21 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 			const formData = new FormData();
 			formData.append('title', newSong.title);
 			formData.append('duration', durationInSeconds);
-			formData.append('album', newSong.album === 'none' ? 'none' : newSong.album);
-			
+			formData.append(
+				'album',
+				newSong.album === 'none' ? 'none' : newSong.album
+			);
+
 			// Tự động tăng track_number
-			const nextTrackNumber = newSong.album === 'none' ? null : (albumTracks[newSong.album] + 1);
+			const nextTrackNumber =
+				newSong.album === 'none' ? null : albumTracks[newSong.album] + 1;
 			formData.append('track_number', nextTrackNumber);
-			
+
 			formData.append('popularity', '0');
 			formData.append('preview_url', '');
 			formData.append('is_active', 'true');
 			// Thêm artist_id[] cho mỗi nghệ sĩ được chọn
-			selectedArtists.forEach(artist => {
+			selectedArtists.forEach((artist) => {
 				formData.append('artist_id[]', artist.artist_id);
 			});
 
@@ -158,12 +174,15 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 			if (files.image) {
 				formData.append('img_path', files.image);
 			}
-      
+			formData.append('is_premium', isPremium);
+
 			// Thêm bài hát
 			const trackResponse = await TrackService.add(formData);
 
 			if (!trackResponse.success) {
-				throw new Error(trackResponse.error || 'Có lỗi xảy ra khi thêm bài hát');
+				throw new Error(
+					trackResponse.error || 'Có lỗi xảy ra khi thêm bài hát'
+				);
 			}
 
 			// Thêm quan hệ artist-track
@@ -172,7 +191,7 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 					artist: artist.artist_id,
 					track: trackResponse.data.track_id,
 					role: index === 0 ? 'primary' : 'featured',
-					is_active: true
+					is_active: true,
 				});
 			});
 
@@ -188,6 +207,8 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 			setIsLoading(false);
 		}
 	};
+
+	const [isPremium, setIsPremium] = useState(false);
 
 	return (
 		<div className='bg-gray-500 p-6 rounded-lg space-y-4 py-4 text-white w-[400px] absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 '>
@@ -294,7 +315,9 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 					{/* Artist Search */}
 					<div className='space-y-2 relative'>
 						<label className='text-sm font-medium'>
-							{selectedArtists.length === 0 ? 'Primary Artist *' : 'Add Featured Artist'}
+							{selectedArtists.length === 0
+								? 'Primary Artist *'
+								: 'Add Featured Artist'}
 						</label>
 						<input
 							type='text'
@@ -345,7 +368,18 @@ const AddSongForm = ({ onClose, onSuccess }) => {
 							</select>
 						</div>
 					)}
-
+					<div class='flex items-center space-x-2'>
+						<input
+							id='isPremium'
+							type='checkbox'
+							checked={isPremium}
+							class='form-checkbox h-5 w-5 text-blue-600'
+							onChange={(e) => setIsPremium(e.target.checked)}
+						/>
+						<label for='isPremium' class='text-white font-medium'>
+							Premium
+						</label>
+					</div>
 					<div className='flex justify-end gap-4 pt-4'>
 						<button
 							className='px-4 py-2 border border-zinc-500 rounded text-white hover:bg-zinc-700'

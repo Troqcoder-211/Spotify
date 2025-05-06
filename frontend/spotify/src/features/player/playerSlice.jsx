@@ -50,15 +50,13 @@ const playerSlice = createSlice({
 			state.playStatus = false;
 		},
 		// Tiến đến bài hát tiếp theo
-		nextTrack: (state, action) => {
-			const { isRepeat } = action.payload;
-
+		nextTrack: (state) => {
 			// danh sách trống
 			if (state.playlist.length === 0) return;
 			// cuối hàng => phát lại từ đầu
 			else if (state.currentTrackIndex === state.playlist.length - 1) {
 				state.currentTrackIndex = 0;
-				state.playStatus = isRepeat ? true : false;
+				// state.playStatus = isRepeat ? true : false;
 			}
 			// bình thường
 			else {
@@ -80,7 +78,6 @@ const playerSlice = createSlice({
 				minute: Math.floor(durationInSec / 60),
 				second: durationInSec % 60,
 			};
-			state.playStatus = true;
 		},
 		previousTrack: (state) => {
 			// danh sách trống
@@ -109,7 +106,36 @@ const playerSlice = createSlice({
 				minute: Math.floor(durationInSec / 60),
 				second: durationInSec % 60,
 			};
-			state.playStatus = true;
+		},
+		nextTrackNoRepeat: (state) => {
+			// danh sách trống
+			if (state.playlist.length === 0) return;
+			// cuối hàng => phát lại từ đầu
+			else if (state.currentTrackIndex === state.playlist.length - 1) {
+				state.playStatus = false;
+				return;
+				// state.playStatus = isRepeat ? true : false;
+			}
+			// bình thường
+			else {
+				if (state.shuffle) {
+					if (state.shuffleList.length === 0) {
+						state.shuffleList = createShuffledIndices(state.playlist.length); // Shuffle lại nếu hết
+					}
+					const idx = state.shuffleList.pop();
+					state.currentTrackIndex = idx;
+				} else {
+					state.currentTrackIndex += 1;
+				}
+			}
+
+			state.currentTime = { minute: 0, second: 0 };
+			const durationInSec =
+				state.playlist[state.currentTrackIndex]?.duration || 0;
+			state.totalTime = {
+				minute: Math.floor(durationInSec / 60),
+				second: durationInSec % 60,
+			};
 		},
 		// Chức năng phát 1 bài dựa trên index
 		selectTrack: (state, action) => {
@@ -187,11 +213,17 @@ const playerSlice = createSlice({
 		setShuffle: (state) => {
 			state.shuffle = !state.shuffle;
 		},
+		playOne: (state) => {
+			if (state.currentTrackIndex === -1) return;
+			state.currentTime = { minute: 0, second: 0 };
+			state.playStatus = true;
+		},
 	},
 });
 
 export const {
 	play,
+	nextTrackNoRepeat,
 	pause,
 	nextTrack,
 	previousTrack,
@@ -201,5 +233,7 @@ export const {
 	setShuffle,
 	addTrack,
 	clearPlayer,
+	setTotalTime,
+	playOne,
 } = playerSlice.actions;
 export default playerSlice.reducer;

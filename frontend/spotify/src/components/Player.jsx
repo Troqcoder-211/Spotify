@@ -9,9 +9,12 @@ import {
 	setCurrentTime,
 	setRepeatMode,
 	setShuffle,
+	nextTrackNoRepeat,
 } from '../features/player/playerSlice';
 import QueueCard from './Queue/QueueCard';
 import VideoPlayer from './Video/VideoPlayer';
+import ProgressBar from './ProgressBar';
+import Controls from './Controls';
 
 const Player = () => {
 	const dispatch = useDispatch();
@@ -25,17 +28,170 @@ const Player = () => {
 		currentTrackIndex,
 	} = useSelector((state) => state.player);
 
+	const { user } = useSelector((state) => state.auth);
+
+	const isSeekingRef = useRef(false);
+
 	const audioRef = useRef(null);
 	const videoRef = useRef(null);
+
 	const mediaRef = playlist[currentTrackIndex]?.video_path
 		? videoRef
 		: audioRef;
 
+	const [showQueue, setShowQueue] = useState(false);
 	const [isDragging, setIsDragging] = useState(false);
+	const [isChangeTrack, setIsChangeTrack] = useState(false);
+	const [audioSrc, setAudioSrc] = useState('');
+	const [isAds, setIsAds] = useState(false);
 
-	const formatTime = (time) =>
-		`${time.minute}:${time.second < 10 ? `0${time.second}` : time.second}`;
+	const formatTime = (time) => {
+		if (!time) return '0:00';
+		const { minute, second } = time;
+		return `${minute}:${second < 10 ? `0${second}` : second}`;
+	};
 
+	useEffect(() => {
+		dispatch(pause());
+	}, []);
+
+	// Xử lý khi thay đổi playStatus
+	useEffect(() => {
+		if (!mediaRef.current || !playlist[currentTrackIndex]) return;
+
+		const audio = mediaRef.current;
+
+		if (playStatus) {
+			const playPromise = audio.play();
+			if (playPromise !== undefined) {
+				playPromise.catch((error) => {
+					console.warn('Không thể phát audio:', error);
+				});
+			}
+		} else {
+			audio.pause();
+		}
+	}, [playStatus]);
+
+	useEffect(() => {
+		if (!mediaRef.current || !playlist[currentTrackIndex]) return;
+
+		const audio = mediaRef.current;
+		const newTime = currentTime.minute * 60 + currentTime.second;
+
+		if (isSeekingRef.current || isChangeTrack) {
+			audio.currentTime = newTime;
+			isSeekingRef.current = false;
+			setIsChangeTrack(false);
+		}
+	}, [currentTime]);
+
+	useEffect(() => {
+		const mediaElement = mediaRef.current;
+		if (!mediaElement) return;
+
+		const handleEnded = () => {
+			const song = playlist[currentTrackIndex];
+			if (!song?.preview_url) {
+				setAudioSrc(song.file_path);
+				const onAudioCanPlay = () => {
+					if (playStatus) {
+						mediaElement.play().catch((error) => {
+							console.warn('Không thể phát bài mới:', error);
+						});
+					} else {
+						mediaElement.pause();
+					}
+
+					// Xoá sự kiện sau khi đã phát nhạc để tránh gọi lại nhiều lần
+					mediaElement.removeEventListener('canplaythrough', onAudioCanPlay);
+				};
+				mediaElement.addEventListener('canplaythrough', onAudioCanPlay);
+
+				return;
+			}
+			switch (repeatMode) {
+				case 'one':
+					if (playStatus) {
+						mediaElement.play();
+					}
+					dispatch(setCurrentTime({ minute: 0, second: 0 }));
+
+					return;
+				case 'all':
+					if (playStatus) {
+						mediaElement.play();
+					}
+					dispatch(nextTrack());
+					return;
+				default:
+					dispatch(nextTrackNoRepeat());
+					return;
+			}
+		};
+
+		const handleTimeUpdate = () => {
+			if (isSeekingRef.current) return;
+
+			const currentSec = Math.floor(mediaElement.currentTime);
+
+			const minute = Math.floor(currentSec / 60);
+			const second = currentSec % 60;
+			dispatch(setCurrentTime({ minute, second }));
+		};
+
+		mediaElement.addEventListener('ended', handleEnded);
+
+		mediaElement.addEventListener('timeupdate', handleTimeUpdate);
+
+		return () => {
+			mediaElement.removeEventListener('timeupdate', handleTimeUpdate);
+			mediaElement.removeEventListener('ended', handleEnded);
+		};
+	}, [repeatMode]);
+
+	useEffect(() => {
+		if (!mediaRef.current || !playlist[currentTrackIndex]) return;
+
+		const song = playlist[currentTrackIndex];
+		if (user.account_type === 'free' && song.preview_url !== '') {
+			console.log('>>> premium', song);
+			setIsAds(true);
+			setAudioSrc(song.preview_url);
+		} else {
+			console.log('>>> free', song);
+			setIsAds(false);
+			setAudioSrc(song.file_path);
+		}
+
+		const audio = mediaRef.current;
+		audio.currentTime = 0;
+		dispatch(setCurrentTime({ minute: 0, second: 0 }));
+
+		// Đảm bảo bài hát đã tải xong mới bắt đầu phát
+		const onAudioCanPlay = () => {
+			if (playStatus) {
+				audio.play().catch((error) => {
+					console.warn('Không thể phát bài mới:', error);
+				});
+			} else {
+				audio.pause();
+			}
+
+			// Xoá sự kiện sau khi đã phát nhạc để tránh gọi lại nhiều lần
+			audio.removeEventListener('canplaythrough', onAudioCanPlay);
+		};
+
+		// Gắn sự kiện canplaythrough khi audio src thay đổi
+		audio.addEventListener('canplaythrough', onAudioCanPlay);
+
+		// Dọn dẹp sự kiện khi component unmount hoặc khi thay đổi track
+		return () => {
+			audio.removeEventListener('canplaythrough', onAudioCanPlay);
+		};
+	}, [currentTrackIndex, playlist]);
+
+	//
 	const handleSeek = (e) => {
 		const bar = e.currentTarget;
 		const clickX = e.clientX - bar.getBoundingClientRect().left;
@@ -47,6 +203,8 @@ const Player = () => {
 
 		if (mediaRef.current && playlist[currentTrackIndex]) {
 			mediaRef.current.currentTime = seekToSeconds;
+			isSeekingRef.current = true;
+			setIsChangeTrack(false);
 			dispatch(
 				setCurrentTime({
 					minute: Math.floor(seekToSeconds / 60),
@@ -55,69 +213,6 @@ const Player = () => {
 			);
 		}
 	};
-
-	useEffect(() => {
-		dispatch(pause());
-	}, []);
-
-	useEffect(() => {
-		if (!mediaRef.current || !playlist[currentTrackIndex]) return;
-
-		const audio = mediaRef.current;
-		const newTime = currentTime.minute * 60 + currentTime.second;
-		// Chỉ cập nhật nếu khác (tránh loop)
-		if (Math.floor(audio.currentTime) !== newTime) {
-			audio.currentTime = newTime;
-		}
-
-		// Chỉ phát khi đã có bài và trạng thái là đang phát
-		if (playStatus) {
-			const playPromise = audio.play();
-
-			if (playPromise !== undefined) {
-				playPromise.catch((error) => {
-					console.warn('Không thể phát audio:', error);
-				});
-			}
-		} else {
-			audio.pause();
-		}
-	}, [playStatus, currentTrackIndex, playlist, currentTime]);
-
-	useEffect(() => {
-		const mediaElement = mediaRef.current;
-		if (!mediaElement) return;
-
-		const handleEnded = () => {
-			switch (repeatMode) {
-				case 'one':
-					dispatch(setCurrentTime({ minute: 0, second: 0 }));
-					return;
-				case 'all':
-					dispatch(nextTrack({ isRepeat: true }));
-					return;
-				default:
-					dispatch(nextTrack({ isRepeat: false }));
-					return;
-			}
-		};
-		const handleTimeUpdate = () => {
-			const currentSec = Math.floor(mediaElement.currentTime);
-
-			mediaElement.addEventListener('ended', handleEnded);
-
-			const minute = Math.floor(currentSec / 60);
-			const second = currentSec % 60;
-			dispatch(setCurrentTime({ minute, second }));
-		};
-
-		mediaElement.addEventListener('timeupdate', handleTimeUpdate);
-
-		return () => {
-			mediaElement.removeEventListener('timeupdate', handleTimeUpdate);
-			mediaElement.removeEventListener('ended', handleEnded);
-		};
-	}, [dispatch, totalTime, repeatMode]);
 
 	// progress bar
 	const handleMouseDown = (e) => {
@@ -135,16 +230,42 @@ const Player = () => {
 		}
 	};
 
-	const [showQueue, setShowQueue] = useState(false);
+	const handleTogglePlay = () => {
+		if (playStatus) {
+			dispatch(pause());
+		} else {
+			dispatch(play());
+		}
+	};
+
+	const handlePrev = () => {
+		setIsChangeTrack(true);
+		dispatch(previousTrack());
+	};
+
+	const handleNext = () => {
+		setIsChangeTrack(true);
+		dispatch(nextTrack());
+	};
+
+	const handleShuffle = () => {
+		dispatch(setShuffle());
+	};
+
+	const handleRepeat = () => {
+		dispatch(setRepeatMode());
+	};
 
 	const handleShowQueue = () => {
 		setShowQueue(!showQueue);
 	};
+
+	//
 	return (
 		<div className='flex h-[10%] flex-col justify-center'>
 			<div className='h-[100%] bg-black flex justify-between items-center text-white px-4 '>
 				{/* Image and text */}
-				<div className='hidden lg:flex items-center gap-4 '>
+				<div className='hidden w-[375px] lg:flex items-center gap-4 '>
 					<img
 						className='w-16'
 						src={
@@ -153,18 +274,19 @@ const Player = () => {
 						}
 						alt='anhbaihat'
 					/>
-					<div>
-						<p className='font-bold '>
+					<div className='flex flex-col max-w-[250px]'>
+						<p className='font-bold break-words leading-snug'>
 							{playlist[currentTrackIndex]?.title || 'Unknown'}
 						</p>
-						<p className='text-[13px] text-[#b3b3b3] font-bold'>
-							{playlist[currentTrackIndex]?.artists || '[nghệ sĩ1, nghệ sĩ2]'}
+						<p className='text-[13px] text-[#b3b3b3] font-bold break-words leading-snug'>
+							{playlist[currentTrackIndex]?.artists
+								.map((a) => a?.name)
+								.join(',') || '[nghệ sĩ1, nghệ sĩ2]'}
 						</p>
 					</div>
 				</div>
-				{/* AUDIO / VIDEO */}
-				{/* Audio / Video Player */}
 
+				{/* AUDIO / VIDEO */}
 				{playlist[currentTrackIndex]?.video_path ? (
 					<VideoPlayer
 						videoRef={videoRef}
@@ -173,98 +295,37 @@ const Player = () => {
 				) : (
 					<audio
 						ref={audioRef}
-						src={playlist[currentTrackIndex]?.file_path}
+						// src={playlist[currentTrackIndex]?.file_path}
+						src={audioSrc}
 						hidden
-						controls
+						// controls
 						preload='metadata'
 					/>
 				)}
 
-				{/* controls  */}
+				{/* CONTROLS  */}
 				<div className='flex flex-col items-center gap-3 m-auto'>
-					<div className='flex gap-y-4 gap-x-7 items-center'>
-						<img
-							onClick={() => dispatch(setShuffle())}
-							className='w-5 cursor-pointer '
-							src={shuffle ? assets.shuffle_e_icon : assets.shuffle_icon}
-							alt='shuffle'
-						/>
-						<img
-							onClick={() => dispatch(previousTrack())}
-							className='w-5 cursor-pointer '
-							src={assets.prev_icon}
-							alt='prev'
-						/>
-
-						{/* play and pause button */}
-
-						{playStatus ? (
-							<div
-								onClick={() => dispatch(pause())}
-								className='h-12 w-12 bg-[#00c951] rounded-[50%] flex items-center justify-center  cursor-pointer select-none '
-							>
-								<img
-									className='w-6 cursor-pointer '
-									src={assets.pause_icon}
-									alt='pause'
-								/>
-							</div>
-						) : (
-							<div
-								onClick={() => dispatch(play())}
-								className='h-12 w-12 bg-[#00c951] rounded-[50%] flex items-center justify-center cursor-pointer select-none '
-							>
-								<img
-									className='w-5 cursor-pointer '
-									src={assets.play_icon}
-									alt='play'
-								/>
-							</div>
-						)}
-
-						<img
-							onClick={() => dispatch(nextTrack({ isRepeat: false }))}
-							className='w-5 cursor-pointer '
-							src={assets.next_icon}
-							alt='next'
-						/>
-						<img
-							onClick={() => dispatch(setRepeatMode())}
-							className='w-5 cursor-pointer '
-							src={
-								repeatMode === 'off'
-									? assets.loop_icon
-									: repeatMode === 'one'
-									? assets.loop_e_o_icon
-									: assets.loop_e_icon
-							}
-							alt='loop'
-						/>
-					</div>
-					<div className='flex items-center gap-5'>
-						<p>{formatTime(currentTime)}</p>
-						<div
-							onMouseDown={handleMouseDown}
-							onMouseMove={handleMouseMove}
-							onMouseUp={handleMouseUp}
-							onMouseLeave={handleMouseUp}
-							className='group w-[60vw] max-w-[800px] bg-[#4d4d4d] rounded-full cursor-pointer relative h-[4px] expand-hitbox'
-						>
-							<div
-								style={{
-									width: `${
-										((currentTime.minute * 60 + currentTime.second) /
-											(totalTime.minute * 60 + totalTime.second || 1)) *
-										100
-									}%`,
-								}}
-								className='h-full bg-[#fff] rounded-full absolute top-0 left-0 group-hover:bg-[#1db954]'
-							>
-								<div className='hidden group-hover:block w-4 h-4 bg-white rounded-full absolute -right-1 top-1/2 -translate-y-1/2'></div>
-							</div>
-						</div>
-						<p>{formatTime(totalTime)}</p>
-					</div>
+					<Controls
+						isPlaying={playStatus}
+						repeatMode={repeatMode}
+						isShuffle={shuffle}
+						togglePlay={handleTogglePlay}
+						handlePrev={handlePrev}
+						handleNext={handleNext}
+						handleShuffle={handleShuffle}
+						handleRepeat={handleRepeat}
+						disabled={isAds}
+					/>
+					{/* ProgressBar		 */}
+					<ProgressBar
+						currentTime={currentTime}
+						totalTime={totalTime}
+						onSeekStart={handleMouseDown}
+						onSeekMove={handleMouseMove}
+						onSeekEnd={handleMouseUp}
+						formatTime={formatTime}
+						disabled={isAds}
+					/>
 				</div>
 				<div className='hidden lg:flex items-center gap-y-2 gap-x-4 opacity-75'>
 					<img className='w-[16px] ' src={assets.play_icon} alt='play' />

@@ -72,7 +72,7 @@ const Navbar = () => {
 								onClick={toggleDropdown}
 								className='bg-purple-500 text-black w-7 h-7 rounded-full flex items-center justify-center cursor-pointer'
 							>
-								{user?.full_name?.[0] || 'U'}
+								{user?.username?.[0]?.toUpperCase() || 'U'}
 							</button>
 
 							{dropdownOpen && (

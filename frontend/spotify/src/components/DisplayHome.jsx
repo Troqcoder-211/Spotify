@@ -4,19 +4,23 @@ import AlbumItem from './AlbumItem';
 import SongItem from './SongItem';
 import { albumsData } from '../assets/img/assets';
 
-import { assets } from '../assets/img/assets';
 import SingerItem from './SingerItem';
 import TrackService from '../services/TrackService';
+import ArtistService from '../services/ArtistService';
 
 const DisplayHome = () => {
-	const artists = [
-		{ name: 'Sơn Tùng M-TP', image: assets.sontung },
-		{ name: 'Dương Domic', image: assets.sontung },
-		{ name: 'HIEUTHUHAI', image: assets.sontung },
-		{ name: "ANH TRAI 'SAY HI'", image: assets.sontung },
-		{ name: 'buitruonglinh', image: assets.sontung },
-		{ name: 'Vũ.', image: assets.sontung },
-	];
+	const [artists, setArtists] = useState([]);
+
+	const getAllArtists = async () => {
+		const res = await ArtistService.getAll();
+
+		console.log('>>>>>>>>>>>>>>>>', res);
+		if (res.success) {
+			setArtists(res.data);
+		} else {
+			setArtists([]);
+		}
+	};
 
 	const [songs, setSongs] = useState([]);
 
@@ -31,6 +35,7 @@ const DisplayHome = () => {
 	};
 	useEffect(() => {
 		getAllSongs();
+		getAllArtists();
 	}, []);
 	return (
 		<>

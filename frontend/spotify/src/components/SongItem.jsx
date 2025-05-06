@@ -1,28 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useDispatch } from 'react-redux';
 import { addTrack } from '../features/player/playerSlice';
 import ArtistTrackService from '../services/ArtistTrackService';
-import { toast } from 'react-toastify';
 
 const SongItem = ({ props }) => {
 	const dispatch = useDispatch();
-	const [artists, setArtists] = useState([]);
 	const handleClick = () => {
 		dispatch(addTrack(props));
 	};
-
-	const handleGetArtists = async () => {
-		const res = await ArtistTrackService.getArtistsByTrack(props.track_id);
-		if (res.success) {
-			setArtists(res.data);
-		} else {
-			setArtists([]);
-			toast.error(res.error);
-		}
-	};
-	useEffect(() => {
-		handleGetArtists();
-	}, []);
 
 	return (
 		<div
@@ -43,7 +28,7 @@ const SongItem = ({ props }) => {
 						.join(' ')}
 				</p>
 				<p className='text-slate-400 text-[13px] truncate text-left'>
-					{artists.map((a) => a?.artist?.name).join(',') ||
+					{props.artists.map((a) => a?.name).join(',') ||
 						'[Nghệ sĩ A, Nghệ sĩ B]'}
 				</p>
 			</div>

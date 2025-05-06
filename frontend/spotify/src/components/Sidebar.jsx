@@ -7,7 +7,6 @@ import FolderMusic from './FolderMusicItem';
 import AlbumLibrary from './AlbumLibraryItem';
 import ArtisLibraryItem from './ArtisLibraryItem';
 
-
 import { assets } from '../assets/img/assets';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { LuLibrary } from 'react-icons/lu';
@@ -18,10 +17,10 @@ import { AiOutlineFolder } from 'react-icons/ai';
 import FolderService from '../services/FolderService';
 import PlaylistSerVice from '../services/PlaylistService';
 import { useSelector } from 'react-redux';
+import Search from './Search';
 
 const Sidebar = () => {
 	const { isAuthenticated } = useSelector((state) => state.auth);
-
 
 	const [music, setMusic] = useState([
 		{
@@ -54,7 +53,6 @@ const Sidebar = () => {
 		setFolders(res.data);
 	};
 
-	
 	const [playlist, setPlaylist] = useState([]);
 
 	const getAllPlaylists = async () => {
@@ -65,7 +63,6 @@ const Sidebar = () => {
 		setPlaylist(res.data);
 	};
 
-
 	useEffect(() => {
 		getAllFolders();
 	}, []);
@@ -73,9 +70,6 @@ const Sidebar = () => {
 	useEffect(() => {
 		getAllPlaylists();
 	}, []);
-
-	
-
 
 	const [createFolder, setCreateFolder] = useState(false);
 
@@ -86,11 +80,11 @@ const Sidebar = () => {
 	const navigate = useNavigate();
 	return (
 		<div className='w-[25%]  h-full  flex-col gap-2 text-white hidden lg:flex '>
-			<div className='bg-[#121212] h-[10%] rounded flex items-center justify-center'>
+			<div className='bg-[#121212] h-[10%] rounded flex items-center justify-between gap-x-6'>
 				{/* Home Icon */}
 				<div
 					onClick={() => navigate('/')}
-					className='flex  items-center gap-3 pl-8 cursor-pointer mx-2 '
+					className='flex  items-center gap-3 cursor-pointer mx-2 '
 				>
 					<div className='w-12 h-12 rounded-full bg-[#1f1f1f] hover:bg-[#2a2a2a] flex items-center justify-center duration-300'>
 						<img
@@ -102,14 +96,7 @@ const Sidebar = () => {
 				</div>
 				{/* Search Icon */}
 
-				<div className=' relative hidden sm:block'>
-					<AiOutlineSearch className='absolute text-[20px] top-[16px] left-[10px] text-gray-500' />
-					<input
-						className='bg-[#F0F2F5] w-full h-12 dark:bg-[#333334] p-2 rounded-full pl-9 outline-none placeholder:text-white'
-						type='text'
-						placeholder='Bạn cần nghe gì?'
-					/>
-				</div>
+				<Search />
 			</div>
 
 			<div className='bg-[#121212] h-[95%] rounded relative overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-[#121212]'>
@@ -260,7 +247,6 @@ const Sidebar = () => {
 								  );
 							})
 						)} */}
-				
 
 						{/* {album.map((album, index) => (
               <AlbumLibrary props={album} key={index} />

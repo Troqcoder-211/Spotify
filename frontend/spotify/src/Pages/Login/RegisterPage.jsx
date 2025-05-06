@@ -12,21 +12,20 @@ export default function RegisterPage() {
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 
-	const handleRegister = (e) => {
+	const handleRegister = async (e) => {
 		e.preventDefault();
-		const result = dispatch(registerUser({ email, password, username }));
+		try {
+			await dispatch(registerUser({ email, password, username }));
 
-		if (registerUser.fulfilled.match(result)) {
 			toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
 			navigate('/login');
-		} else {
+		} catch (err) {
 			toast.warning('Đăng ký thất bại! Vui lòng thử lại.');
+			console.error(err);
 		}
 	};
 
-	const { isAuthenticated, loading, error } = useSelector(
-		(state) => state.auth
-	);
+	const { isAuthenticated, loading } = useSelector((state) => state.auth);
 
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -77,11 +76,7 @@ export default function RegisterPage() {
 				>
 					{loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
 				</button>
-				{!error && (
-					<p className='text-center' style={{ color: 'red' }}>
-						Đăng kí thất bại
-					</p>
-				)}
+
 				<p className='text-gray-400 text-sm text-center'>
 					Đã có tài khoản?
 					<span
