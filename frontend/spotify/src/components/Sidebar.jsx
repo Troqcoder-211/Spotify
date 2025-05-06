@@ -16,11 +16,11 @@ import { AiOutlineFolder } from 'react-icons/ai';
 
 import FolderService from '../services/FolderService';
 import PlaylistSerVice from '../services/PlaylistService';
-import { useSelector } from 'react-redux';
 import Search from './Search';
+import AlbumItem from './AlbumItem';
 
 const Sidebar = () => {
-	const { isAuthenticated } = useSelector((state) => state.auth);
+	// const { isAuthenticated } = useSelector((state) => state.auth);
 
 	const [music, setMusic] = useState([
 		{
@@ -46,28 +46,24 @@ const Sidebar = () => {
 	const [folders, setFolders] = useState([]);
 
 	const getAllFolders = async () => {
-		if (!isAuthenticated) return;
-
 		const res = await FolderService.getAllFolders();
-		// console.log('folerd?>>>>>>>>>>', res);
-		setFolders(res.data);
+		if (res.success) setFolders(res.data);
+		else setFolders([]);
 	};
 
 	const [playlist, setPlaylist] = useState([]);
 
 	const getAllPlaylists = async () => {
-		if (!isAuthenticated) return;
-
 		const res = await PlaylistSerVice.getAllPlayLists();
-		// console.log('playlist?>>>>>>>>>>', res);
-		setPlaylist(res.data);
+		if (res.success) {
+			setPlaylist(res.data);
+		} else {
+			setPlaylist([]);
+		}
 	};
 
 	useEffect(() => {
 		getAllFolders();
-	}, []);
-
-	useEffect(() => {
 		getAllPlaylists();
 	}, []);
 
@@ -226,27 +222,21 @@ const Sidebar = () => {
 					<div className='w-full'>
 						<LikedSongsItem props={music} />
 
-						{folders.length === 0 ? (
+						{/* {folders.length === 0 ? (
 							<p>Không có thư mục nào.</p>
 						) : (
 							folders.map((folder, index) => (
 								<FolderMusic key={index} name={folder.title} />
 							))
-						)}
+						)} */}
 
-						{/* {playlist.length===0 ? (
+						{playlist.length === 0 ? (
 							<p>Không có playlist nào.</p>
 						) : (
 							playlist.map((list, index) => {
-								return (
-									<AlbumLibrary
-									  key={index}
-									  name={list.description}
-									  imageUrl={list.cover_img_url}
-									/>
-								  );
+								return <FolderMusic key={index} name={list.description} />;
 							})
-						)} */}
+						)}
 
 						{/* {album.map((album, index) => (
               <AlbumLibrary props={album} key={index} />

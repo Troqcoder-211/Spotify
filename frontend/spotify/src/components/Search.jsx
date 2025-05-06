@@ -19,6 +19,7 @@ const Search = () => {
 
 	const handleClick = (song) => {
 		dispatch(addTrack(song));
+		setShowResults(false);
 	};
 	// Xử lý khi click ra ngoài
 	useEffect(() => {

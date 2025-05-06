@@ -370,11 +370,11 @@ const AdminDashboard = () => {
 								<div className='absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20 animate-fade-in-down overflow-hidden'>
 									<button
 										onClick={() => {
-											toast(`Tụi em đã cố gắng hết sức`);
+											navigate('/');
 										}}
 										className='cursor-pointer block w-full text-left px-4 py-2 text-sm text-gray-700  hover:bg-purple-100 hover:text-purple-700 transition duration-150 rounded-b-lg'
 									>
-										Trang cá nhân
+										Trang chủ
 									</button>
 									<button
 										onClick={handleLogout}
