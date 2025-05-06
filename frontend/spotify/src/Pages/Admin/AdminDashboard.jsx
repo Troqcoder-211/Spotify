@@ -1,270 +1,751 @@
-import React, { useState, useEffect } from "react";
-import axios from 'axios';
-import { FaMusic, FaCompactDisc } from "react-icons/fa";
-import AddSongForm from "./components/AddSongForm";
-import AddAlbumForm from "./components/AddAlbumForm";
+import React, { useState, useEffect, useRef } from 'react';
+import { FaMusic, FaCompactDisc, FaUserAlt } from 'react-icons/fa';
+import AddSongForm from './components/AddSongForm';
+import AddAlbumForm from './components/AddAlbumForm';
+import AddArtistForm from './components/AddArtistForm';
+import AddUserForm from './components/AddUserForm';
+import TrackService from '../../services/TrackService';
+import ArtistService from '../../services/ArtistService';
+import ArtistTrackService from '../../services/ArtistTrackService';
+import AlbumService from '../../services/AlbumService';
+import ArtistAlbumService from '../../services/ArtistAlbumService';
+import UserService from '../../services/UserService';
+import { useDispatch, useSelector } from 'react-redux';
+import { logoutUser } from '../../features/auth/authSlice';
+import { clearPlayer } from '../../features/player/playerSlice';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+
 
 const AdminDashboard = () => {
-  // Dữ liệu thống kê (dummy data)
+	const [activeTab, setActiveTab] = useState('songs');
+	const [showAddSongForm, setShowAddSongForm] = useState(false);
+	const [showAddAlbumForm, setShowAddAlbumForm] = useState(false);
+	const [showAddArtistForm, setShowAddArtistForm] = useState(false);
+	const [showAddUserForm, setShowAddUserForm] = useState(false);
+	const [tracks, setTracks] = useState([]);
+	const [artists, setArtists] = useState([]);
+	const [albums, setAlbums] = useState([]);
+	const [users, setUsers] = useState([]);
+	const [trackArtists, setTrackArtists] = useState({});
+	const [albumArtists, setAlbumArtists] = useState({});
+	const [albumTotalSongs, setAlbumTotalSongs] = useState({});
+	const [totalUsers, setTotalUsers] = useState(null);
+	const [totalSongs, setTotalSongs] = useState(null);
+	const [totalListen, setTotalListen] = useState(null);
+	const [totalArtists, setTotalArtists] = useState(null);
+	useEffect(() => {
+		// Total User
+		axios
+			.get("http://localhost:8888/api/users/count/", {
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}` // Nếu dùng JWT
+				}
+			})
+			.then((res) => {
+				setTotalUsers(res.data.total_users);
+			})
+			.catch((err) => {
+				console.error("Lỗi khi lấy số lượng người dùng:", err);
+			});
 
-  const [activeTab, setActiveTab] = useState("songs");
-  const [showAddSongForm, setShowAddSongForm] = useState(false);
-  const [showAddAlbumForm, setShowAddAlbumForm] = useState(false);
+		// Total Artists
+		axios
+			.get("http://localhost:8888/api/artists/count/", {
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`
+				}
+			})
+			.then((res) => {
+				setTotalArtists(res.data.total_artists);
+			})
+			.catch((err) => {
+				console.error("Lỗi khi lấy số lượng nghệ sĩ:", err);
+			});
+		// Total Listen
+		axios
+			.get("http://localhost:8888/api/listen/count/", {
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`
+				}
+			})
+			.then((res) => {
+				setTotalListen(res.data.total_listen);
+			})
+			.catch((err) => {
+				console.error("Lỗi khi lấy số lượng lượt nghe:", err);
+			});
+		// Total songs
+		axios
+			.get("http://localhost:8888/api/tracks/count/", {
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`
+				}
+			})
+			.then((res) => {
+				setTotalSongs(res.data.total_songs);
+			})
+			.catch((err) => {
+				console.error("Lỗi khi lấy số lượng bài hát:", err);
+			});
+	}, []);
 
-  const [totalUsers, setTotalUsers] = useState(null);
-  const [totalSongs, setTotalSongs] = useState(null);
-  const [totalListen, setTotalListen] = useState(null);
-  const [totalArtists, setTotalArtists] = useState(null);
-  useEffect(() => {
-    // Total User
-    axios
-      .get("http://localhost:8888/api/users/count/", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}` // Nếu dùng JWT
-        }
-      })
-      .then((res) => {
-        setTotalUsers(res.data.total_users);
-      })
-      .catch((err) => {
-        console.error("Lỗi khi lấy số lượng người dùng:", err);
-      });
+	const stats = [
+		{ label: "Total Songs", value: totalSongs !== null ? totalSongs : "Loading...", icon: <FaMusic /> },
+		{ label: "Total Listen", value: totalListen !== null ? totalListen : "Loading...", icon: <FaCompactDisc /> },
+		{ label: "Total Artists", value: totalArtists !== null ? totalArtists : "Loading...", icon: "👤" },
+		{ label: "Total Users", value: totalUsers !== null ? totalUsers : "Loading...", icon: "🔊" }
+	];
+	// Dữ liệu bảng (dummy data)
+	const songs = [
+		{ title: "Into The Wild", artist: "Tate McRae", releaseDate: "2023-02-14" },
+		{
+			title: "Neon Love",
+			artist: "Electric Dreams",
+			releaseDate: "2023-01-11",
+		},
+		{
+			title: "Purple Sunset",
+			artist: "Dream Valley",
+			releaseDate: "2022-12-25",
+		},
+		{
+			title: "City Lights",
+			artist: "Night Flowers",
+			releaseDate: "2022-10-08",
+		},
+		{ title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
+		{ title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
+		{ title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
+		{ title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
+		{ title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
+		{ title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
+		{ title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
+	];
 
-    // Total Artists
-    axios
-      .get("http://localhost:8888/api/artists/count/", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      })
-      .then((res) => {
-        setTotalArtists(res.data.total_artists);
-      })
-      .catch((err) => {
-        console.error("Lỗi khi lấy số lượng nghệ sĩ:", err);
-      });
-    // Total Listen
-    axios
-      .get("http://localhost:8888/api/listen/count/", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      })
-      .then((res) => {
-        setTotalListen(res.data.total_listen);
-      })
-      .catch((err) => {
-        console.error("Lỗi khi lấy số lượng lượt nghe:", err);
-      });
-    // Total songs
-    axios
-      .get("http://localhost:8888/api/tracks/count/", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      })
-      .then((res) => {
-        setTotalSongs(res.data.total_songs);
-      })
-      .catch((err) => {
-        console.error("Lỗi khi lấy số lượng bài hát:", err);
-      });
-  }, []);
+	const loadTracks = async () => {
+		try {
+			const response = await TrackService.getAll();
+			if (response.success) {
+				setTracks(response.data);
+			}
+		} catch (error) {
+			console.error('Error loading tracks:', error);
+			alert('Không thể tải danh sách bài hát');
+		}
+	};
 
-  const stats = [
-    { label: "Total Songs", value: totalSongs !== null ? totalSongs : "Loading...", icon: <FaMusic /> },
-    { label: "Total Listen", value: totalListen !== null ? totalListen : "Loading...", icon: <FaCompactDisc /> },
-    { label: "Total Artists", value: totalArtists !== null ? totalArtists : "Loading...", icon: "👤" },
-    { label: "Total Users", value: totalUsers !== null ? totalUsers : "Loading...", icon: "🔊" }
-  ];
-  // Dữ liệu bảng (dummy data)
-  const songs = [
-    { title: "Into The Wild", artist: "Tate McRae", releaseDate: "2023-02-14" },
-    {
-      title: "Neon Love",
-      artist: "Electric Dreams",
-      releaseDate: "2023-01-11",
-    },
-    {
-      title: "Purple Sunset",
-      artist: "Dream Valley",
-      releaseDate: "2022-12-25",
-    },
-    {
-      title: "City Lights",
-      artist: "Night Flowers",
-      releaseDate: "2022-10-08",
-    },
-    { title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
-    { title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
-    { title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
-    { title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
-    { title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
-    { title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
-    { title: "Cyber Pulse", artist: "Cyber Ride", releaseDate: "2022-09-20" },
-  ];
+	const loadAlbums = async () => {
+		try {
+			const response = await AlbumService.getAll();
+			if (response.success) {
+				setAlbums(response.data);
 
-  return (
-    <div className="min-h-screen bg-[#000] text-white p-8">
-      {/* Form thêm bài hát */}
-      <div className="relative">
-        {showAddSongForm && (
-          <div>
-            <div
-              className="fixed inset-0 bg-black opacity-50"
-              onClick={() => setShowAddSongForm(false)}
-            ></div>
-            <AddSongForm
-              // albums={null}
-              onClose={() => setShowAddSongForm(false)}
-            />
-          </div>
-        )}
-        {showAddAlbumForm && (
-          <div>
-            <div
-              className="fixed inset-0 bg-black opacity-50"
-              onClick={() => setShowAddAlbumForm(false)}
-            ></div>
-            <AddAlbumForm onClose={() => setShowAddAlbumForm(false)} />
-          </div>
-        )}
-        {/* Tiêu đề trang */}
-        <h1 className="text-3xl font-bold">Music Manager</h1>
-        <p className="text-gray-400 mb-8">Manage your music catalog</p>
-        {/* Khu vực thống kê */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          {stats.map((item, index) => (
-            <div
-              key={index}
-              className="bg-[#2a2a2a] p-4 rounded-lg shadow flex items-center space-x-4"
-            >
-              <div className="text-3xl">{item.icon}</div>
-              <div>
-                <p className="text-sm text-gray-400">{item.label}</p>
-                <p className="text-2xl font-bold">{item.value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* Song and album section */}
-        {/* <div class="w-[16%]"> */}
-        <div className="flex bg-g[#2a2a2a] border border-gray-700 rounded-md p-1 mb-4 w-[240px]">
-          {/* Nền xám đậm, bo tròn, padding nhỏ */}
-          <button
-            onClick={() => setActiveTab("songs")}
-            className={`flex items-center  px-4 py-2 rounded-md  w-[120px]
-            ${activeTab === "songs" ? "bg-gray-700 text-white" : ""}`}
-          >
-            {/* Nút Songs */}
-            <FaMusic className="mr-2" /> {/* Icon nốt nhạc */}
-            Songs
-          </button>
-          <button
-            onClick={() => setActiveTab("albums")}
-            className={`flex items-center  px-4 py-2 rounded-md w-[120px]
-            ${activeTab === "albums" ? "bg-gray-700 text-white" : ""}`}
-          >
-            {/* Nút Albums */}
-            <FaCompactDisc className="mr-2" /> {/* Icon đĩa CD */}
-            Albums
-          </button>
-        </div>
-        {/* </div> */}
-        {/* Khu vực quản lý bài hát */}
-        <div className="bg-[#2a2a2a] p-4 rounded-lg shadow">
-          {activeTab === "albums" && (
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">🎶 Albums Library</h2>
-                <button
-                  onClick={() => setShowAddAlbumForm(!showAddAlbumForm)}
-                  className="bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400"
-                >
-                  + Add Albums
-                </button>
-              </div>
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="pb-2">Title</th>
-                    <th className="pb-2">Artist</th>
-                    <th className="pb-2">Release Date</th>
-                    <th className="pb-2 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {songs.map((song, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-gray-700 hover:bg-gray-700"
-                    >
-                      <td className="py-2">{song.title}</td>
-                      <td>{song.artist}</td>
-                      <td>{song.releaseDate}</td>
-                      <td className="text-center">
-                        <button className="bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400">
-                          Delete
-                        </button>
-                        <button className="bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400">
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {activeTab === "songs" && (
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">🎶 Songs Library</h2>
-                <button
-                  className="bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400"
-                  onClick={() => setShowAddSongForm(!showAddSongForm)}
-                >
-                  + Add Songs
-                </button>
-              </div>
+				// Load total songs for each album
+				const totalSongsMap = {};
+				for (const album of response.data) {
+					const tracksResponse = await TrackService.getByAlbum(album.album_id);
+					if (tracksResponse.success) {
+						totalSongsMap[album.album_id] = tracksResponse.data.length;
+					}
+				}
+				setAlbumTotalSongs(totalSongsMap);
+				console.log(albumTotalSongs);
+			}
+		} catch (error) {
+			console.error('Error loading albums:', error);
+			alert('Không thể tải danh sách album');
+		}
+	};
 
-              {/* Table danh sách bài hát */}
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="pb-2">Title</th>
-                    <th className="pb-2">Artist</th>
-                    <th className="pb-2">Release Date</th>
-                    <th className="pb-2 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {songs.map((song, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-gray-700 hover:bg-gray-700"
-                    >
-                      <td className="py-2">{song.title}</td>
-                      <td>{song.artist}</td>
-                      <td>{song.releaseDate}</td>
-                      <td className="text-center">
-                        <button className="bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400">
-                          Delete
-                        </button>
-                        <button className="bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400">
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+	const loadArtists = async () => {
+		try {
+			const response = await ArtistService.getAllWithStats();
+			if (response.success) {
+				setArtists(response.data);
+			}
+		} catch (error) {
+			console.error('Error loading artists:', error);
+			alert('Không thể tải danh sách nghệ sĩ');
+		}
+	};
+
+	const loadTrackArtists = async () => {
+		try {
+			const artistsMap = {};
+			for (const track of tracks) {
+				const response = await ArtistTrackService.getArtistsByTrackId(
+					track.track_id
+				);
+				if (response.success) {
+					const artistNames = [];
+					for (const artistId of response.data) {
+						const artistResponse = await ArtistService.getById(artistId);
+						if (artistResponse.success) {
+							artistNames.push(artistResponse.data.name);
+						}
+					}
+					artistsMap[track.track_id] = artistNames.join(', ');
+				} else {
+					artistsMap[track.track_id] = 'Unknown';
+				}
+			}
+			setTrackArtists(artistsMap);
+		} catch (error) {
+			console.error('Error loading track artists:', error);
+		}
+	};
+
+	const loadAlbumArtists = async () => {
+		try {
+			const artistsMap = {};
+			for (const album of albums) {
+				const response = await ArtistAlbumService.getArtistsByAlbumId(
+					album.album_id
+				);
+				if (response.success) {
+					const artistNames = [];
+					for (const artistAlbum of response.data) {
+						const artistResponse = await ArtistService.getById(
+							artistAlbum.artist
+						);
+						if (artistResponse.success) {
+							artistNames.push(artistResponse.data.name);
+						}
+					}
+					artistsMap[album.album_id] = artistNames.join(', ');
+				} else {
+					artistsMap[album.album_id] = 'Unknown';
+				}
+			}
+			setAlbumArtists(artistsMap);
+		} catch (error) {
+			console.error('Error loading album artists:', error);
+		}
+	};
+
+	const loadUsers = async () => {
+		try {
+			const response = await UserService.getAll();
+			if (response.success) {
+				setUsers(response.data);
+			}
+		} catch (error) {
+			console.error('Error loading users:', error);
+			alert('Không thể tải danh sách người dùng');
+		}
+	};
+
+	useEffect(() => {
+		loadTracks();
+		loadAlbums();
+		loadArtists();
+		loadUsers();
+	}, []);
+
+	useEffect(() => {
+		if (tracks.length > 0) {
+			loadTrackArtists();
+		}
+	}, [tracks]);
+
+	useEffect(() => {
+		if (albums.length > 0) {
+			loadAlbumArtists();
+		}
+	}, [albums]);
+
+	const handleDeleteTrack = async (id) => {
+		if (window.confirm('Bạn có chắc muốn xóa bài hát này?')) {
+			try {
+				const response = await TrackService.delete(id);
+				if (response.success) {
+					alert('Xóa bài hát thành công!');
+					loadTracks();
+				}
+			} catch (error) {
+				alert('Không thể xóa bài hát');
+			}
+		}
+	};
+
+	const handleDeleteAlbum = async (id) => {
+		if (window.confirm('Bạn có chắc muốn xóa album này?')) {
+			try {
+				const response = await AlbumService.delete(id);
+				if (response.success) {
+					alert('Xóa album thành công!');
+					loadAlbums();
+				}
+			} catch (error) {
+				alert('Không thể xóa album');
+			}
+		}
+	};
+
+	const handleDeleteArtist = async (id) => {
+		if (window.confirm('Bạn có chắc muốn xóa nghệ sĩ này?')) {
+			try {
+				const response = await ArtistService.delete(id);
+				if (response.success) {
+					alert('Xóa nghệ sĩ thành công!');
+					loadArtists();
+				}
+			} catch (error) {
+				alert('Không thể xóa nghệ sĩ');
+			}
+		}
+	};
+
+	const handleSuspendUser = async (id) => {
+		if (window.confirm('Bạn có chắc muốn tạm dừng người dùng này?')) {
+			try {
+				const response = await UserService.suspend(id);
+				if (response.success) {
+					alert('Tạm dừng người dùng thành công!');
+					loadUsers();
+				}
+			} catch (error) {
+				alert('Không thể tạm dừng người dùng');
+			}
+		}
+	};
+
+	const handleActiveUser = async (id) => {
+		if (window.confirm('Bạn có chắc muốn kích hoạt người dùng này?')) {
+			try {
+				const response = await UserService.active(id);
+				if (response.success) {
+					alert('Kích hoạt người dùng thành công!');
+					loadUsers();
+				}
+			} catch (error) {
+				alert('Không thể kích hoạt người dùng');
+			}
+		}
+	};
+
+	const formatDuration = (seconds) => {
+		const minutes = Math.floor(seconds / 60);
+		const remainingSeconds = seconds % 60;
+		return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+	};
+
+	const formatDate = (dateString) => {
+		return new Date(dateString).toLocaleDateString();
+	};
+
+	const dispatch = useDispatch();
+	const navigate = useNavigate();
+	const { isAuthenticated, user } = useSelector((state) => state.auth);
+	const handleLogout = () => {
+		dispatch(logoutUser());
+		dispatch(clearPlayer());
+		toast.success('Đăng xuất thành công');
+		navigate('/login');
+	};
+	const [dropdownOpen, setDropdownOpen] = useState(false);
+	const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+	const dropdownRef = useRef(null); // Tạo ref cho dropdown
+
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+				setDropdownOpen(false); // Đóng dropdown khi click ngoài
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside); // Lắng nghe sự kiện click
+
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside); // Dọn dẹp sự kiện khi component bị hủy
+		};
+	}, []);
+
+	return (
+		<div className='min-h-screen bg-[#000] text-white p-8'>
+			{/* Form thêm bài hát */}
+			<div className='relative'>
+				{showAddSongForm && (
+					<div>
+						<div
+							className='fixed inset-0 bg-black opacity-50'
+							onClick={() => setShowAddSongForm(false)}
+						></div>
+						{/* <AddSongForm
+							onClose={() => setShowAddSongForm(false)}
+							onSuccess={() => {
+								loadTracks();
+								setShowAddSongForm(false);
+							}}
+						/> */}
+						{/* Modal form căn giữa màn hình */}
+						<div className='fixed inset-0 flex items-center justify-center z-50'>
+							<AddSongForm
+								onClose={() => setShowAddSongForm(false)}
+								onSuccess={() => {
+									loadTracks();
+									setShowAddSongForm(false);
+								}}
+							/>
+						</div>
+					</div>
+				)}
+				{showAddAlbumForm && (
+					<div>
+						<div
+							className='fixed inset-0 bg-black opacity-50'
+							onClick={() => setShowAddAlbumForm(false)}
+						></div>
+						<AddAlbumForm
+							onClose={() => setShowAddAlbumForm(false)}
+							onSuccess={() => {
+								loadAlbums();
+								setShowAddAlbumForm(false);
+							}}
+						/>
+					</div>
+				)}
+				{showAddArtistForm && (
+					<div>
+						<div
+							className='fixed inset-0 bg-black opacity-50'
+							onClick={() => setShowAddArtistForm(false)}
+						></div>
+						<AddArtistForm
+							onClose={() => setShowAddArtistForm(false)}
+							onSuccess={() => {
+								loadArtists();
+								setShowAddArtistForm(false);
+							}}
+						/>
+					</div>
+				)}
+				{showAddUserForm && (
+					<div>
+						<div
+							className='fixed inset-0 bg-black opacity-50'
+							onClick={() => setShowAddUserForm(false)}
+						></div>
+						<AddUserForm
+							onClose={() => setShowAddUserForm(false)}
+							onSuccess={() => {
+								loadUsers();
+								setShowAddUserForm(false);
+							}}
+						/>
+					</div>
+				)}
+				{/* Tiêu đề trang */}
+				<div className='flex justify-between'>
+					<div>
+						<h1 className='text-3xl font-bold'>Music Manager</h1>
+						<p className='text-gray-400 mb-8'>Manage your music catalog</p>
+					</div>
+
+					{isAuthenticated && (
+						<div className='relative' ref={dropdownRef}>
+							<button
+								onClick={toggleDropdown}
+								className='bg-purple-500 text-white px-3 font-bold h-12 rounded-[10px] flex items-center justify-center cursor-pointer'
+							>
+								Xin chào {user?.full_name?.toUpperCase() || 'Xin chào ADMIN'}
+							</button>
+
+							{dropdownOpen && (
+								<div className='absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20 animate-fade-in-down overflow-hidden'>
+									<button
+										onClick={() => {
+											navigate('/');
+										}}
+										className='cursor-pointer block w-full text-left px-4 py-2 text-sm text-gray-700  hover:bg-purple-100 hover:text-purple-700 transition duration-150 rounded-b-lg'
+									>
+										Trang chủ
+									</button>
+									<button
+										onClick={handleLogout}
+										className=' cursor-pointer block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 hover:text-purple-700 transition duration-150 rounded-t-lg'
+									>
+										Đăng xuất
+									</button>
+								</div>
+							)}
+						</div>
+					)}
+				</div>
+				{/* Khu vực thống kê */}
+				<div className='grid grid-cols-4 gap-4 mb-8'>
+					{stats.map((item, index) => (
+						<div
+							key={index}
+							className='bg-[#2a2a2a] p-4 rounded-lg shadow flex items-center space-x-4'
+						>
+							<div className='text-3xl'>{item.icon}</div>
+							<div>
+								<p className='text-sm text-gray-400'>{item.label}</p>
+								<p className='text-2xl font-bold'>{item.value}</p>
+							</div>
+						</div>
+					))}
+				</div>
+				{/* Song, album and artist section */}
+				<div className='flex bg-[#2a2a2a] border border-gray-700 rounded-md p-1 mb-4 w-[480px]'>
+					<button
+						onClick={() => setActiveTab('songs')}
+						className={`flex items-center px-4 py-2 rounded-md w-[120px]
+            ${activeTab === 'songs' ? 'bg-gray-700 text-white' : ''}`}
+					>
+						<FaMusic className='mr-2' />
+						Songs
+					</button>
+					<button
+						onClick={() => setActiveTab('albums')}
+						className={`flex items-center px-4 py-2 rounded-md w-[120px]
+            ${activeTab === 'albums' ? 'bg-gray-700 text-white' : ''}`}
+					>
+						<FaCompactDisc className='mr-2' />
+						Albums
+					</button>
+					<button
+						onClick={() => setActiveTab('artists')}
+						className={`flex items-center px-4 py-2 rounded-md w-[120px]
+            ${activeTab === 'artists' ? 'bg-gray-700 text-white' : ''}`}
+					>
+						<FaUserAlt className='mr-2' />
+						Artists
+					</button>
+					<button
+						onClick={() => setActiveTab('users')}
+						className={`flex items-center px-4 py-2 rounded-md w-[120px]
+            ${activeTab === 'users' ? 'bg-gray-700 text-white' : ''}`}
+					>
+						<FaUserAlt className='mr-2' />
+						Users
+					</button>
+				</div>
+				{/* Khu vực quản lý */}
+				<div className='bg-[#2a2a2a] p-4 rounded-lg shadow'>
+					{activeTab === 'songs' && (
+						<div>
+							<div className='flex justify-between items-center mb-4'>
+								<h2 className='text-xl font-bold'>🎶 Songs Library</h2>
+								<button
+									className='bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400'
+									onClick={() => setShowAddSongForm(!showAddSongForm)}
+								>
+									+ Add Songs
+								</button>
+							</div>
+
+							{/* Table danh sách bài hát */}
+							<table className='w-full text-left'>
+								<thead>
+									<tr className='border-b border-gray-700'>
+										<th className='pb-2'>Title</th>
+										<th className='pb-2'>Artist</th>
+										<th className='pb-2'>Duration</th>
+										<th className='pb-2'>Upload Date</th>
+										<th className='pb-2 text-center'>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{tracks.map((track, index) => (
+										<tr
+											key={index}
+											className='border-b border-gray-700 hover:bg-gray-700'
+										>
+											<td className='py-2'>{track.title}</td>
+											<td>{trackArtists[track.track_id] || 'Unknown'}</td>
+											<td>{formatDuration(track.duration)}</td>
+											<td>{formatDate(track.created_at)}</td>
+											<td className='text-center'>
+												<button
+													className='bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400'
+													onClick={() => handleDeleteTrack(track.track_id)}
+												>
+													Delete
+												</button>
+												<button className='bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400'>
+													Edit
+												</button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					)}
+					{activeTab === 'albums' && (
+						<div>
+							<div className='flex justify-between items-center mb-4'>
+								<h2 className='text-xl font-bold'>💿 Albums Library</h2>
+								<button
+									className='bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400'
+									onClick={() => setShowAddAlbumForm(!showAddAlbumForm)}
+								>
+									+ Add Album
+								</button>
+							</div>
+
+							{/* Table danh sách album */}
+							<table className='w-full text-left'>
+								<thead>
+									<tr className='border-b border-gray-700'>
+										<th className='pb-2'>Title</th>
+										<th className='pb-2'>Artist</th>
+										<th className='pb-2'>Release Date</th>
+										<th className='pb-2'>Total Songs</th>
+										<th className='pb-2'>Status</th>
+										<th className='pb-2 text-center'>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{albums.map((album, index) => (
+										<tr
+											key={index}
+											className='border-b border-gray-700 hover:bg-gray-700'
+										>
+											<td className='py-2'>{album.title}</td>
+											<td>{albumArtists[album.album_id] || 'Unknown'}</td>
+											<td>{formatDate(album.release_date)}</td>
+											<td>{albumTotalSongs[album.album_id] || 0}</td>
+											<td>{album.is_active ? 'Active' : 'Inactive'}</td>
+											<td className='text-center'>
+												<button
+													className='bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400'
+													onClick={() => handleDeleteAlbum(album.album_id)}
+												>
+													Delete
+												</button>
+												<button className='bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400'>
+													Edit
+												</button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					)}
+					{activeTab === 'artists' && (
+						<div>
+							<div className='flex justify-between items-center mb-4'>
+								<h2 className='text-xl font-bold'>👤 Artists Library</h2>
+								<button
+									className='bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400'
+									onClick={() => setShowAddArtistForm(!showAddArtistForm)}
+								>
+									+ Add Artist
+								</button>
+							</div>
+
+							{/* Table danh sách nghệ sĩ */}
+							<table className='w-full text-left'>
+								<thead>
+									<tr className='border-b border-gray-700'>
+										<th className='pb-2'>Name</th>
+										<th className='pb-2'>Bio</th>
+										<th className='pb-2'>Country</th>
+										<th className='pb-2'>Total Songs</th>
+										<th className='pb-2'>Total Albums</th>
+										<th className='pb-2'>Status</th>
+										<th className='pb-2 text-center'>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{artists.map((artist, index) => (
+										<tr
+											key={index}
+											className='border-b border-gray-700 hover:bg-gray-700'
+										>
+											<td className='py-2'>{artist.name}</td>
+											<td>{artist.bio}</td>
+											<td>{artist.country}</td>
+											<td>{artist.total_songs || 0}</td>
+											<td>{artist.total_albums || 0}</td>
+											<td>{artist.is_active ? 'Active' : 'Inactive'}</td>
+											<td className='text-center'>
+												<button
+													className='bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400'
+													onClick={() => handleDeleteArtist(artist.id)}
+												>
+													Delete
+												</button>
+												<button className='bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400'>
+													Edit
+												</button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					)}
+					{activeTab === 'users' && (
+						<div>
+							<div className='flex justify-between items-center mb-4'>
+								<h2 className='text-xl font-bold'>👤 Users Management</h2>
+								<button
+									className='bg-green-500 text-black px-4 py-2 rounded-md font-semibold hover:bg-green-400'
+									onClick={() => setShowAddUserForm(true)}
+								>
+									+ Add User
+								</button>
+							</div>
+
+							<table className='w-full text-left'>
+								<thead>
+									<tr className='border-b border-gray-700'>
+										<th className='pb-2'>Username</th>
+										<th className='pb-2'>Email</th>
+										<th className='pb-2'>Full Name</th>
+										<th className='pb-2'>Account Type</th>
+										<th className='pb-2'>Country</th>
+										<th className='pb-2'>Join Date</th>
+										<th className='pb-2'>Status</th>
+										<th className='pb-2 text-center'>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{users.map((user, index) => (
+										<tr
+											key={index}
+											className='border-b border-gray-700 hover:bg-gray-700'
+										>
+											<td className='py-2'>{user.username}</td>
+											<td>{user.email}</td>
+											<td>{user.full_name || '-'}</td>
+											<td>{user.account_type}</td>
+											<td>{user.country || '-'}</td>
+											<td>{formatDate(user.created_at)}</td>
+											<td>{user.is_active ? 'Active' : 'Suspended'}</td>
+											<td className='text-center'>
+												{user.is_active ? (
+													<button
+														className='bg-red-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-red-400'
+														onClick={() => handleSuspendUser(user.id)}
+													>
+														Suspend
+													</button>
+												) : (
+													<button
+														className='bg-green-500 px-2 py-1 rounded-md text-sm m-4 hover:bg-green-400'
+														onClick={() => handleActiveUser(user.id)}
+													>
+														Active
+													</button>
+												)}
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					)}
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export default AdminDashboard;

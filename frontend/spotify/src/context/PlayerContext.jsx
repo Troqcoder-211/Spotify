@@ -1,118 +1,166 @@
-import { createContext, useEffect, useRef, useState } from "react";
-import { songsData } from "../assets/img/assets";
+import { createContext, useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 export const PlayerContext = createContext();
 
-/*************  ✨ Codeium Command ⭐  *************/
-/**
- * A context provider for the player component. It provides
- * the state and actions of the player to the children components.
- *
- * @param {object} props
- * @param {object} props.children
- * @returns {JSX.Element}
- */
-/******  0d0dc6ab-3472-4e1a-adf4-65f02cd2213b  *******/
 const PlayerContextProvider = (props) => {
-  const audioRef = useRef();
-  const seekBg = useRef();
-  const seekBar = useRef();
+	const { isAuthenticated } = useSelector((state) => state.auth);
 
-  const [track, setTrack] = useState(songsData[1]);
-  const [playStatus, setPlayStatus] = useState(false);
-  const [time, setTime] = useState({
-    currentTime: {
-      second: 0,
-      minute: 0,
-    },
-    totalTime: {
-      second: 0,
-      minute: 0,
-    },
-  });
+	const audioRef = useRef();
+	const seekBg = useRef();
+	const seekBar = useRef();
 
-  const play = () => {
-    audioRef.current.play();
-    setPlayStatus(true);
-  };
+	const [track, setTrack] = useState(null);
+	const [playStatus, setPlayStatus] = useState(false);
+	const [time, setTime] = useState({
+		currentTime: {
+			second: 0,
+			minute: 0,
+		},
+		totalTime: {
+			second: 0,
+			minute: 0,
+		},
+	});
 
-  const pause = () => {
-    audioRef.current.pause();
-    setPlayStatus(false);
-  };
+	// Hàm phát nhạc
+	const play = () => {
+		if (audioRef.current && track) {
+			audioRef.current.play();
+			setPlayStatus(true);
+		}
+	};
 
-  const playWithId = async (id) => {
-    await setTrack(songsData[id]);
-    await audioRef.current.play();
-    setPlayStatus(true);
-  };
+	// Hàm dừng nhạc
+	const pause = () => {
+		if (audioRef.current && track) {
+			audioRef.current.pause();
+			setPlayStatus(false);
+		}
+	};
 
-  const previous = async () => {
-    if (track.id === 0) return;
+	// Hàm phát bài hát với tên file
+	const playWithFile = (track) => {
+		if (!isAuthenticated) {
+			alert('Hãy đăng nhập để nghe nhạc');
+			return;
+		}
+		setTrack(track); // Chỉ lưu tên file trong track
+		setPlayStatus(true);
 
-    await setTrack(songsData[track.id - 1]);
-    await audioRef.current.play();
-    setPlayStatus(true);
-  };
+		// Đảm bảo rằng audio mới phát với URL đúng
+		if (audioRef.current) {
+			audioRef.current.src = track.file_path;
+			audioRef.current.play();
+		}
+	};
 
-  const next = async () => {
-    if (track.id === songsData.length - 1) return;
-    await setTrack(songsData[track.id + 1]);
-    await audioRef.current.play();
-    setPlayStatus(true);
-  };
+	// Chuyển bài hát trước đó
+	const previous = () => {
+		// Cập nhật logic nếu cần thiết
+	};
 
-  const seekSong = async (e) => {
-    // console.log(e);
-    audioRef.current.currentTime =
-      (e.nativeEvent.offsetX / seekBg.current.offsetWidth) *
-      audioRef.current.duration;
-  };
+	// Chuyển bài hát tiếp theo
+	const next = () => {
+		// Cập nhật logic nếu cần thiết
+	};
 
-  const contextValue = {
-    audioRef,
-    seekBg,
-    seekBar,
-    track,
-    setTrack,
-    playStatus,
-    setPlayStatus,
-    time,
-    setTime,
-    play,
-    pause,
-    playWithId,
-    previous,
-    next,
-    seekSong,
-  };
+	// Tìm kiếm vị trí trong bài hát
+	const seekSong = (e) => {
+		if (audioRef.current && seekBg.current && track) {
+			const offsetX = e.nativeEvent.offsetX;
+			const bgWidth = seekBg.current.offsetWidth;
+			const duration = audioRef.current.duration;
 
-  useEffect(() => {
-    setTimeout(() => {
-      audioRef.current.ontimeupdate = () => {
-        seekBar.current.style.width = `${
-          (audioRef.current.currentTime / audioRef.current.duration) * 100
-        }%`;
+			audioRef.current.currentTime = (offsetX / bgWidth) * duration;
+		}
+	};
 
-        setTime({
-          currentTime: {
-            minute: Math.floor(audioRef.current.currentTime / 60),
-            second: Math.floor(audioRef.current.currentTime % 60),
-          },
-          totalTime: {
-            minute: Math.floor(audioRef.current.duration / 60),
-            second: Math.floor(audioRef.current.duration % 60),
-          },
-        });
-      };
-    }, 1000);
-  }, [audioRef]);
+	// Cập nhật thời gian và thanh seek
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio) return;
 
-  return (
-    <PlayerContext.Provider value={contextValue}>
-      {props.children}
-    </PlayerContext.Provider>
-  );
+		const handleTimeUpdate = () => {
+			if (!audio.duration) return;
+
+			const current = audio.currentTime;
+			const duration = audio.duration;
+
+			if (seekBar.current && seekBg.current && track) {
+				seekBar.current.style.width = `${(current / duration) * 100}%`;
+			}
+
+			setTime({
+				currentTime: {
+					minute: Math.floor(current / 60),
+					second: Math.floor(current % 60),
+				},
+				totalTime: {
+					minute: Math.floor(duration / 60),
+					second: Math.floor(duration % 60),
+				},
+			});
+		};
+
+		audio.ontimeupdate = handleTimeUpdate;
+
+		return () => {
+			audio.ontimeupdate = null;
+		};
+	}, [track]);
+
+	// Tự động play khi track thay đổi nếu đang bật trạng thái play
+	useEffect(() => {
+		if (playStatus && audioRef.current && track) {
+			audioRef.current.play();
+		}
+	}, [track]);
+
+	// Tự động chuyển bài khi kết thúc
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio) return;
+
+		audio.onended = () => {
+			next(); // Chuyển sang bài tiếp theo khi kết thúc
+		};
+
+		return () => {
+			audio.onended = null;
+		};
+	}, [track]);
+
+	const contextValue = {
+		audioRef,
+		seekBg,
+		seekBar,
+		track,
+		setTrack,
+		playStatus,
+		setPlayStatus,
+		time,
+		setTime,
+		play,
+		pause,
+		playWithFile,
+		previous,
+		next,
+		seekSong,
+	};
+
+	return (
+		<PlayerContext.Provider value={contextValue}>
+			{props.children}
+			<audio
+				ref={audioRef}
+				src={track?.file}
+				controls
+				hidden
+				preload='metadata'
+			></audio>
+		</PlayerContext.Provider>
+	);
 };
 
 export default PlayerContextProvider;

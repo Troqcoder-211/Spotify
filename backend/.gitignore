@@ -1,0 +1,40 @@
+# env
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Build & distribution
+build/
+dist/
+*.egg-info/
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Django
+*.pot
+*.pyc
+*.pyo
+*.pyd
+
+# Django static and media
+staticfiles/
+media/
+
+# Env variables
+.env
+
+# Editor settings
+.vscode/
+.idea/
+
+# Database migrations (trừ __init__.py)
+**/migrations/*.py
+!**/migrations/__init__.py
+**/migrations/*.pyc
+
+

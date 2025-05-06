@@ -1,17 +1,19 @@
-// src/components/PrivateRoute.jsx
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux'; // Giả sử bạn dùng Redux để quản lý trạng thái auth
+import { useSelector } from 'react-redux';
 
-const PrivateRoute = ({ element }) => {
-	const { isAuthenticated } = useSelector((state) => state.auth); // Kiểm tra người dùng đã đăng nhập chưa
+const PrivateRoute = ({ element, allowedRoles = [] }) => {
+	const { isAuthenticated, user } = useSelector((state) => state.auth);
 
 	if (!isAuthenticated) {
-		// Nếu chưa đăng nhập, redirect về trang login
 		return <Navigate to='/login' />;
 	}
 
-	return element; // Nếu đã đăng nhập, cho phép truy cập route
+	if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+		return <Navigate to='/unauthorized' />; // Hoặc về trang 403
+	}
+
+	return element;
 };
 
 export default PrivateRoute;

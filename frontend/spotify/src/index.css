@@ -1,14 +1,50 @@
-@import "tailwindcss";
-
+@import 'tailwindcss';
 
 /* ::-webkit-scrollbar{
     display: none;
 } */
 @theme {
-    --breakpoint-sm: 640px;
-    --breakpoint-md: 768px;
-    --breakpoint-lg: 1024px;
-    --breakpoint-xl: 1280px;
-    --breakpoint-2xl: 1536px;
+	--breakpoint-sm: 640px;
+	--breakpoint-md: 768px;
+	--breakpoint-lg: 1024px;
+	--breakpoint-xl: 1280px;
+	--breakpoint-2xl: 1536px;
 }
-  
+
+.expand-hitbox::before,
+.expand-hitbox::after {
+	content: '';
+	position: absolute;
+	width: 100%;
+	height: 15px;
+	left: 0;
+	background: transparent;
+}
+
+.expand-hitbox::before {
+	top: -15px;
+}
+
+.expand-hitbox::after {
+	bottom: -15px;
+}
+
+/* Hiện mỗi thanh seek */
+.custom-video::-webkit-media-controls-timeline {
+	display: block !important;
+	height: 4px;
+	background-color: transparent !important;
+}
+
+.custom-video::-webkit-media-controls-current-time-display,
+.custom-video::-webkit-media-controls-time-remaining-display,
+.custom-video::-webkit-media-controls-volume-slider,
+.custom-video::-webkit-media-controls-mute-button,
+.custom-video::-webkit-media-controls-play-button {
+	display: none !important;
+}
+
+/* Màu khi hover vào timeline */
+.custom-video:hover::-webkit-media-controls-timeline {
+	accent-color: #1db954 !important;
+}

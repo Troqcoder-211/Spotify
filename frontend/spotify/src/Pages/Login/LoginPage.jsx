@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { unwrapResult } from '@reduxjs/toolkit'; // để lấy kết quả từ asyncThunk
+import { toast } from 'react-toastify';
 
 export default function LoginPage() {
 	const dispatch = useDispatch();
@@ -14,18 +15,21 @@ export default function LoginPage() {
 
 	const handleLogin = async (e) => {
 		e.preventDefault();
+		if (email === 'admin') setEmail((prev) => (prev += '@gmail.com'));
 		try {
 			const resultAction = await dispatch(loginUser({ email, password }));
-
 			const data = unwrapResult(resultAction);
 
 			// ✅ Hiển thị toast thành công
-			alert(`Xin chào ${data?.user?.fullName || 'người dùng'}!`);
-
+			toast.success(`Xin chào ${data?.user?.email || 'người dùng'}!`);
+			if (data.user.role === 'admin') {
+				navigate('/admin');
+			} else {
+				navigate('/');
+			}
 			// 👉 Chuyển hướng nếu cần, ví dụ:
-			navigate('/');
 		} catch (err) {
-			alert(err || 'Đăng nhập thất bại'); // Hiển thị thông báo lỗ
+			toast.warning(err || 'Đăng nhập thất bại'); // Hiển thị thông báo lỗ
 		}
 	};
 
@@ -52,7 +56,7 @@ export default function LoginPage() {
 					<hr className='flex-grow border-gray-700' />
 				</div>
 				<input
-					type='email'
+					type={email === 'admin' ? 'text' : 'email'}
 					placeholder='Email hoặc tên người dùng'
 					className='w-full p-2 mb-4 bg-gray-800 rounded border border-gray-600 focus:outline-none'
 					value={email}
@@ -81,6 +85,14 @@ export default function LoginPage() {
 						className='inline cursor-pointer hover:text-green-400 text-white'
 					>
 						Đăng ký tại đây
+					</span>
+				</p>
+				<p className='text-gray-400 text-sm text-center'>
+					<span
+						onClick={() => navigate('/')}
+						className='inline underline cursor-pointer text-green-600 hover:text-green-400 text-whit text-[16px]'
+					>
+						Quay về trang chủ
 					</span>
 				</p>
 			</div>
