@@ -106,9 +106,8 @@ const Sidebar = () => {
               className="flex items-center gap-1 bg-[#1f1f1f] px-4 py-1.5 rounded-full hover:bg-[#2a2a2a]"
             >
               <img
-                className={`w-5 ${createFolder && "rotate-45 duration-300"}  ${
-                  !createFolder && "rotate-[-45] duration-300"
-                } cursor-pointer`}
+                className={`w-5 ${createFolder && "rotate-45 duration-300"}  ${!createFolder && "rotate-[-45] duration-300"
+                  } cursor-pointer`}
                 src={assets.plus_icon}
                 alt="ArrowIcon"
               />
@@ -198,7 +197,7 @@ const Sidebar = () => {
 
         <div className="flex items-center justify-between">
           <button
-            onClick={() => {}}
+            onClick={() => { }}
             className="mr-4 p-2 flex items-center justify-between hover:rounded-full hover:bg-[#2a2a2a]"
           >
             <AiOutlineSearch className="w-6 h-6" />
