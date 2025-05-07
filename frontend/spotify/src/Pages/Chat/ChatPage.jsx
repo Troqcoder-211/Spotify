@@ -14,10 +14,15 @@ const ChatPage = () => {
 	const [selectedUser, setSelectedUser] = useState(null);
 	const [messages, setMessages] = useState([]);
 	const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+	const [isGeminiLoading, setIsGeminiLoading] = useState(false);
+
+	
+
 
 	useEffect(() => {
 		const fetchConversations = async () => {
 			try {
+				
 				setIsLoadingUsers(true);
 				const response = await Conversation.getAllConversation();
 				const data = response?.data;
@@ -33,6 +38,13 @@ const ChatPage = () => {
 					fullName: conv.name || 'Không xác định',
 					imageUrl: `https://i.pravatar.cc/150?u=${conv.conversation_id}`,
 				}));
+
+				formattedUsers.push({
+					_id: '-1',
+					clerkId: -1,
+					fullName: 'Gemini AI',
+					imageUrl: '/path-to-gemini-avatar.png',
+				});
 
 				setUsers(formattedUsers);
 			} catch (error) {
@@ -85,8 +97,8 @@ const ChatPage = () => {
 	}, [selectedUser]);
 
 	// Hàm xử lý nhận tin nhắn từ WebSocket
-	const handleReceiveMessage = (content, senderUsername, senderId) => {
-		console.log(content, senderUsername, senderId);
+	const handleReceiveMessage = async (content, senderUsername, senderId) => {
+		// console.log(content, senderUsername, senderId);
 		const newMsg = {
 			_id: Date.now().toString(),
 			senderId: senderId ? senderId.toString() : 'unknown', // Xử lý khi senderId không tồn tại
@@ -110,7 +122,34 @@ const ChatPage = () => {
 			}
 			return [...prev, newMsg];
 		});
-	};
+
+		// Nếu đang chat với AI (ví dụ ID đặc biệt là "gemini")
+		if (selectedUser?.clerkId === -1) {
+			setIsGeminiLoading(true);
+			try {
+				const response = await Conversation.chatWithGemini({ content });
+			
+				console.log("Phản hồi từ Gemini:", response);
+				if (response.success) {
+					const aiReply = {
+						_id: Date.now().toString() + '_ai',
+						senderId: 'gemini',
+						content: response.data.reply,
+						createdAt: new Date().toISOString(),
+						senderName: 'Gemini AI',
+					};
+					setMessages((prev) => [...prev, aiReply]);
+				} else {
+					console.error('Gemini phản hồi lỗi:', response.message);
+				}
+			} catch (err) {
+				console.error('Lỗi khi gọi Gemini:', err);
+			} finally {
+				// Tắt trạng thái loading khi nhận được phản hồi từ Gemini
+				setIsGeminiLoading(false);
+			}
+		}
+	};	
 
 	return (
 		<>
@@ -162,6 +201,13 @@ const ChatPage = () => {
 												</div>
 											);
 										})}
+										{isGeminiLoading && (
+											<div className="flex items-center gap-3">
+												<div className="animate-pulse rounded-lg p-3 bg-zinc-700 max-w-[70%]">
+													<p className="text-xs text-zinc-300">Gemini AI đang trả lời...</p>
+												</div>
+											</div>
+										)}
 									</div>
 									<div ref={messagesEndRef} />
 								</div>
@@ -170,6 +216,7 @@ const ChatPage = () => {
 									selectedUser={selectedUser}
 									conversationId={selectedUser?.clerkId}
 									onSend={handleReceiveMessage}
+									isGemini={selectedUser?.clerkId === -1}
 								/>
 							</>
 						) : (
@@ -209,3 +256,4 @@ const formatTime = (dateString) => {
 		hour12: true,
 	});
 };
+
