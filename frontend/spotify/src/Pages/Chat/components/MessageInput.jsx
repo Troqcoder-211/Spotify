@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux';
 import TokenService from '../../../services/TokenService';
 import WebSocketService from '../../../services/WebSocketService';
 
-const MessageInput = ({ selectedUser, conversationId, onSend }) => {
+const MessageInput = ({ selectedUser, conversationId, onSend, isGemini }) => {
+
 	const { user } = useSelector((state) => state.auth);
 	const [newMessage, setNewMessage] = useState('');
 	const [error, setError] = useState(null);
@@ -12,18 +13,13 @@ const MessageInput = ({ selectedUser, conversationId, onSend }) => {
 	const accessToken = user?.accessToken || TokenService.getAccessToken();
 
 	useEffect(() => {
-		if (!conversationId || !accessToken) {
-			setError('Yêu cầu conversationId và accessToken');
-			return;
-		}
-
+		if (!conversationId || !accessToken || isGemini) return;
+	
 		if (!WebSocketService.isConnected()) {
 			WebSocketService.connect(
 				conversationId,
 				accessToken,
 				(message, senderUsername, senderId) => {
-					console.log(message, senderUsername, senderId);
-					// Không lọc senderId nữa, để server broadcast xử lý
 					onSend(message, senderUsername, senderId);
 				},
 				(err) => {
@@ -32,29 +28,33 @@ const MessageInput = ({ selectedUser, conversationId, onSend }) => {
 				() => {
 					setError(null);
 				}
-				// (event) => {
-				//   setError(`Kết nối WebSocket bị đóng: ${event.reason || "Không xác định"}`);
-				// }
 			);
 		}
-
+	
 		return () => {
-			if (WebSocketService.isConnected()) {
+			if (!isGemini && WebSocketService.isConnected()) {
 				WebSocketService.disconnect();
 			}
 		};
-	}, [conversationId, accessToken, onSend]);
+	}, [conversationId, accessToken, onSend, isGemini]);
+	
 
 	const handleSend = useCallback(() => {
 		if (isSending || !selectedUser || !user || !newMessage.trim()) return;
-
+	
 		setIsSending(true);
 		console.log('Gửi tin nhắn:', newMessage);
-		WebSocketService.sendMessage(conversationId, newMessage);
+	
+		if (isGemini) {
+			onSend(newMessage, user.username, user.id);
+		} else {
+			WebSocketService.sendMessage(conversationId, newMessage);
+		}
+	
 		setNewMessage('');
 		setTimeout(() => setIsSending(false), 500);
-	}, [isSending, selectedUser, user, newMessage, conversationId]);
-
+	}, [isSending, selectedUser, user, newMessage, conversationId, isGemini, onSend]);
+	
 	const handleKeyDown = (e) => {
 		if (e.key === 'Enter' && !e.repeat) {
 			e.preventDefault();
