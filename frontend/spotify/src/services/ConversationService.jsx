@@ -29,6 +29,14 @@ const Conversation = {
       });
     });
   },
+
+  chatForTrack: async ({content}) => {
+    return await apiRequest(() => {
+      return api.post('recommend-track/', {
+        text: content,
+      });
+    });
+  },
 };
 
 
