@@ -48,3 +48,25 @@
 .custom-video:hover::-webkit-media-controls-timeline {
 	accent-color: #1db954 !important;
 }
+
+.hide-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+.hide-scrollbar {
+	-ms-overflow-style: none; /* IE và Edge */
+	scrollbar-width: none; /* Firefox */
+}
+
+.volume::-webkit-slider-thumb {
+	width: 20px; /* Kích thước chấm trượt */
+	height: 20px;
+	background: #fff; /* Màu nền chấm trượt */
+	border-radius: 50%;
+	border: 2px solid #00c951; /* Viền chấm trượt màu #00c951 */
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+.volume:focus::-webkit-slider-thumb {
+	background: #00c951; /* Màu nền của chấm trượt khi focus */
+	border-color: #fff; /* Viền của chấm trượt khi focus */
+}

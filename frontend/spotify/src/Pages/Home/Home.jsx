@@ -1,8 +1,6 @@
-import React from 'react';
 import Sidebar from '../../components/Sidebar';
-import Player from '../../components/Player';
+import Player from '../../components/Player/Player';
 import Display from '../../components/Display';
-import { PlayerContext } from '../../context/PlayerContext';
 import Modal from '../../components/Modal';
 import SpotifyBanner from '../../components/SpotofyBanner';
 import FriendListeningSidebar from '../../components/FriendListeningSideBar';
@@ -17,7 +15,7 @@ const Home = () => {
 					<div className='h-[90%] flex'>
 						<Sidebar />
 						<Display />
-						<FriendListeningSidebar />
+						{/* <FriendListeningSidebar /> */}
 					</div>
 					{isAuthenticated ? (
 						<>

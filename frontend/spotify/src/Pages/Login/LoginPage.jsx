@@ -15,7 +15,6 @@ export default function LoginPage() {
 
 	const handleLogin = async (e) => {
 		e.preventDefault();
-		if (email === 'admin') setEmail((prev) => (prev += '@gmail.com'));
 		try {
 			const resultAction = await dispatch(loginUser({ email, password }));
 			const data = unwrapResult(resultAction);

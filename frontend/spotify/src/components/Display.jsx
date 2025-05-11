@@ -5,6 +5,8 @@ import DisplayAlbum from './DisplayAlbum';
 import { albumsData } from '../assets/img/assets';
 import ChatPage from '../Pages/Chat/ChatPage';
 import PremiumOfferSection from './PremiumOfferSection';
+import Lyrics from './Lyrics/Lyrics';
+import Artist from './Artist/Artist';
 
 const Display = () => {
 	const displayRef = useRef(null);
@@ -30,6 +32,9 @@ const Display = () => {
 				<Route index element={<DisplayHome />} />
 				<Route path='/album/:id' element={<DisplayAlbum />} />
 				<Route path='/chat' element={<ChatPage />} />
+				<Route path='/lyrics' element={<Lyrics />} />
+				{/* <Route path='/artist' element={<Artist />} /> */}
+				<Route path='/artist/:id' element={<Artist />} />
 				<Route path='/premium' element={<PremiumOfferSection />} />
 			</Routes>
 		</div>
