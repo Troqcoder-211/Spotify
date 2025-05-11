@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import TokenService from '../../../services/TokenService';
 import WebSocketService from '../../../services/WebSocketService';
 
-const MessageInput = ({ selectedUser, conversationId, onSend, isGemini }) => {
+const MessageInput = ({ selectedUser, conversationId, onSend, isGemini, isTrackBot }) => {
 
 	const { user } = useSelector((state) => state.auth);
 	const [newMessage, setNewMessage] = useState('');
@@ -13,7 +13,7 @@ const MessageInput = ({ selectedUser, conversationId, onSend, isGemini }) => {
 	const accessToken = user?.accessToken || TokenService.getAccessToken();
 
 	useEffect(() => {
-		if (!conversationId || !accessToken || isGemini) return;
+		if (!conversationId || !accessToken || isGemini || isTrackBot) return;
 	
 		if (!WebSocketService.isConnected()) {
 			WebSocketService.connect(
@@ -32,11 +32,11 @@ const MessageInput = ({ selectedUser, conversationId, onSend, isGemini }) => {
 		}
 	
 		return () => {
-			if (!isGemini && WebSocketService.isConnected()) {
+			if (!isGemini && !isTrackBot && !isTrackBot && WebSocketService.isConnected()) {
 				WebSocketService.disconnect();
 			}
 		};
-	}, [conversationId, accessToken, onSend, isGemini]);
+	}, [conversationId, accessToken, onSend, isGemini, isTrackBot]);
 	
 
 	const handleSend = useCallback(() => {
@@ -45,7 +45,7 @@ const MessageInput = ({ selectedUser, conversationId, onSend, isGemini }) => {
 		setIsSending(true);
 		console.log('Gửi tin nhắn:', newMessage);
 	
-		if (isGemini) {
+		if (isGemini || isTrackBot) {
 			onSend(newMessage, user.username, user.id);
 		} else {
 			WebSocketService.sendMessage(conversationId, newMessage);
@@ -53,7 +53,7 @@ const MessageInput = ({ selectedUser, conversationId, onSend, isGemini }) => {
 	
 		setNewMessage('');
 		setTimeout(() => setIsSending(false), 500);
-	}, [isSending, selectedUser, user, newMessage, conversationId, isGemini, onSend]);
+	}, [isSending, selectedUser, user, newMessage, conversationId, isGemini, isTrackBot, onSend]);
 	
 	const handleKeyDown = (e) => {
 		if (e.key === 'Enter' && !e.repeat) {

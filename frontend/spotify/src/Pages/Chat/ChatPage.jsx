@@ -6,8 +6,11 @@ import MessageInput from './components/MessageInput';
 import Navbar from '../../components/Navbar';
 import { useSelector } from 'react-redux';
 import Conversation from '../../services/ConversationService';
+import { addTrack } from '../../features/player/playerSlice';
+import { useDispatch } from 'react-redux';
 
 const ChatPage = () => {
+	const dispatch = useDispatch();
 	const { user } = useSelector((state) => state.auth);
 	const [users, setUsers] = useState([]);
 	const messagesEndRef = useRef(null);
@@ -16,7 +19,29 @@ const ChatPage = () => {
 	const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 	const [isGeminiLoading, setIsGeminiLoading] = useState(false);
 
-	
+	const formatTrackResponse = (data) => {
+		// Nếu không có dữ liệu hợp lệ
+		if (!data) return "Không tìm thấy bài hát phù hợp.";
+
+		// Nếu là 1 track đơn lẻ (object)
+		if (!Array.isArray(data)) {
+			const track = data;
+			return `🎵 ${track.title} \n📀 Mô tả: ${track.description}`;
+		}
+
+		// Nếu là mảng nhiều track
+		if (data.length === 0) {
+			return "Không tìm thấy bài hát phù hợp.";
+		}
+
+		return data
+			.map(
+				(track, index) =>
+					`${index + 1}. ${track.title} - ${track.artists?.[0]?.name || 'Không rõ'}`
+			)
+			.join("\n");
+	};
+
 
 
 	useEffect(() => {
@@ -44,6 +69,13 @@ const ChatPage = () => {
 					clerkId: -1,
 					fullName: 'Gemini AI',
 					imageUrl: '/path-to-gemini-avatar.png',
+				});
+
+				formattedUsers.push({
+					_id: '-2',
+					clerkId: -2,
+					fullName: 'TrackBot',
+					imageUrl: '/path-to-track-avatar.png',
 				});
 
 				setUsers(formattedUsers);
@@ -124,31 +156,46 @@ const ChatPage = () => {
 		});
 
 		// Nếu đang chat với AI (ví dụ ID đặc biệt là "gemini")
-		if (selectedUser?.clerkId === -1) {
-			setIsGeminiLoading(true);
+		if (selectedUser?.clerkId === -1 || selectedUser?.clerkId === -2) {
+			setIsGeminiLoading(true); // Dùng chung loading
+
 			try {
-				const response = await Conversation.chatWithGemini({ content });
-			
-				console.log("Phản hồi từ Gemini:", response);
-				if (response.success) {
+				let aiResponse = null;
+
+				if (selectedUser.clerkId === -1) {
+					aiResponse = await Conversation.chatWithGemini({ content });
+				} else if (selectedUser.clerkId === -2) {
+					aiResponse = await Conversation.chatForTrack({ content });
+				}
+
+				console.log(aiResponse); 
+
+				if (aiResponse?.success && aiResponse.data) {
+					if (aiResponse.message === "Tìm theo tên bài hát") {
+						dispatch(addTrack(aiResponse.data));
+					}
+
 					const aiReply = {
 						_id: Date.now().toString() + '_ai',
-						senderId: 'gemini',
-						content: response.data.reply,
+						senderId: selectedUser.clerkId.toString(),
+						content:
+						selectedUser.clerkId === -2
+							? formatTrackResponse(aiResponse.data)
+							: aiResponse.data.reply,
 						createdAt: new Date().toISOString(),
-						senderName: 'Gemini AI',
+						senderName: selectedUser.fullName,
 					};
 					setMessages((prev) => [...prev, aiReply]);
 				} else {
-					console.error('Gemini phản hồi lỗi:', response.message);
+				console.error('Lỗi phản hồi AI:', aiResponse?.message);
 				}
 			} catch (err) {
-				console.error('Lỗi khi gọi Gemini:', err);
+				console.error('Lỗi khi gọi AI:', err);
 			} finally {
-				// Tắt trạng thái loading khi nhận được phản hồi từ Gemini
 				setIsGeminiLoading(false);
 			}
 		}
+
 	};	
 
 	return (
@@ -217,6 +264,7 @@ const ChatPage = () => {
 									conversationId={selectedUser?.clerkId}
 									onSend={handleReceiveMessage}
 									isGemini={selectedUser?.clerkId === -1}
+									isTrackBot={selectedUser?.clerkId === -2}
 								/>
 							</>
 						) : (
