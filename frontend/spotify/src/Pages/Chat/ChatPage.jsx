@@ -6,18 +6,48 @@ import MessageInput from './components/MessageInput';
 import Navbar from '../../components/Navbar';
 import { useSelector } from 'react-redux';
 import Conversation from '../../services/ConversationService';
+import { addTrack } from '../../features/player/playerSlice';
+import { useDispatch } from 'react-redux';
 
 const ChatPage = () => {
+	const dispatch = useDispatch();
 	const { user } = useSelector((state) => state.auth);
 	const [users, setUsers] = useState([]);
 	const messagesEndRef = useRef(null);
 	const [selectedUser, setSelectedUser] = useState(null);
 	const [messages, setMessages] = useState([]);
 	const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+	const [isGeminiLoading, setIsGeminiLoading] = useState(false);
+
+	const formatTrackResponse = (data) => {
+		// Nếu không có dữ liệu hợp lệ
+		if (!data) return "Không tìm thấy bài hát phù hợp.";
+
+		// Nếu là 1 track đơn lẻ (object)
+		if (!Array.isArray(data)) {
+			const track = data;
+			return `🎵 ${track.title} \n📀 Mô tả: ${track.description}`;
+		}
+
+		// Nếu là mảng nhiều track
+		if (data.length === 0) {
+			return "Không tìm thấy bài hát phù hợp.";
+		}
+
+		return data
+			.map(
+				(track, index) =>
+					`${index + 1}. ${track.title} - ${track.artists?.[0]?.name || 'Không rõ'}`
+			)
+			.join("\n");
+	};
+
+
 
 	useEffect(() => {
 		const fetchConversations = async () => {
 			try {
+				
 				setIsLoadingUsers(true);
 				const response = await Conversation.getAllConversation();
 				const data = response?.data;
@@ -33,6 +63,20 @@ const ChatPage = () => {
 					fullName: conv.name || 'Không xác định',
 					imageUrl: `https://i.pravatar.cc/150?u=${conv.conversation_id}`,
 				}));
+
+				formattedUsers.push({
+					_id: '-1',
+					clerkId: -1,
+					fullName: 'Gemini AI',
+					imageUrl: '/path-to-gemini-avatar.png',
+				});
+
+				formattedUsers.push({
+					_id: '-2',
+					clerkId: -2,
+					fullName: 'TrackBot',
+					imageUrl: '/path-to-track-avatar.png',
+				});
 
 				setUsers(formattedUsers);
 			} catch (error) {
@@ -85,8 +129,8 @@ const ChatPage = () => {
 	}, [selectedUser]);
 
 	// Hàm xử lý nhận tin nhắn từ WebSocket
-	const handleReceiveMessage = (content, senderUsername, senderId) => {
-		console.log(content, senderUsername, senderId);
+	const handleReceiveMessage = async (content, senderUsername, senderId) => {
+		// console.log(content, senderUsername, senderId);
 		const newMsg = {
 			_id: Date.now().toString(),
 			senderId: senderId ? senderId.toString() : 'unknown', // Xử lý khi senderId không tồn tại
@@ -110,7 +154,49 @@ const ChatPage = () => {
 			}
 			return [...prev, newMsg];
 		});
-	};
+
+		// Nếu đang chat với AI (ví dụ ID đặc biệt là "gemini")
+		if (selectedUser?.clerkId === -1 || selectedUser?.clerkId === -2) {
+			setIsGeminiLoading(true); // Dùng chung loading
+
+			try {
+				let aiResponse = null;
+
+				if (selectedUser.clerkId === -1) {
+					aiResponse = await Conversation.chatWithGemini({ content });
+				} else if (selectedUser.clerkId === -2) {
+					aiResponse = await Conversation.chatForTrack({ content });
+				}
+
+				console.log(aiResponse); 
+
+				if (aiResponse?.success && aiResponse.data) {
+					if (aiResponse.message === "Tìm theo tên bài hát") {
+						dispatch(addTrack(aiResponse.data));
+					}
+
+					const aiReply = {
+						_id: Date.now().toString() + '_ai',
+						senderId: selectedUser.clerkId.toString(),
+						content:
+						selectedUser.clerkId === -2
+							? formatTrackResponse(aiResponse.data)
+							: aiResponse.data.reply,
+						createdAt: new Date().toISOString(),
+						senderName: selectedUser.fullName,
+					};
+					setMessages((prev) => [...prev, aiReply]);
+				} else {
+				console.error('Lỗi phản hồi AI:', aiResponse?.message);
+				}
+			} catch (err) {
+				console.error('Lỗi khi gọi AI:', err);
+			} finally {
+				setIsGeminiLoading(false);
+			}
+		}
+
+	};	
 
 	return (
 		<>
@@ -162,6 +248,13 @@ const ChatPage = () => {
 												</div>
 											);
 										})}
+										{isGeminiLoading && (
+											<div className="flex items-center gap-3">
+												<div className="animate-pulse rounded-lg p-3 bg-zinc-700 max-w-[70%]">
+													<p className="text-xs text-zinc-300">Gemini AI đang trả lời...</p>
+												</div>
+											</div>
+										)}
 									</div>
 									<div ref={messagesEndRef} />
 								</div>
@@ -170,6 +263,8 @@ const ChatPage = () => {
 									selectedUser={selectedUser}
 									conversationId={selectedUser?.clerkId}
 									onSend={handleReceiveMessage}
+									isGemini={selectedUser?.clerkId === -1}
+									isTrackBot={selectedUser?.clerkId === -2}
 								/>
 							</>
 						) : (
@@ -209,3 +304,4 @@ const formatTime = (dateString) => {
 		hour12: true,
 	});
 };
+

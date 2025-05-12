@@ -22,6 +22,15 @@ const TrackService = {
 	getByAlbum: async (albumId) => {
 		return await apiRequest(() => api.get(`/tracks/album/${albumId}/`));
 	},
+	getByArtist: async (artistId) => {
+		return await apiRequest(() =>
+			api.get(`/tracks/`, {
+				params: {
+					artist_id: artistId,
+				},
+			})
+		);
+	},
 
 	// Thêm track mới
 	add: async (formData) => {

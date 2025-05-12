@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { assets } from '../assets/img/assets';
+import { assets } from '../../assets/img/assets';
 import { useSelector, useDispatch } from 'react-redux';
 import {
 	play,
@@ -10,14 +10,17 @@ import {
 	setRepeatMode,
 	setShuffle,
 	nextTrackNoRepeat,
-} from '../features/player/playerSlice';
-import QueueCard from './Queue/QueueCard';
-import VideoPlayer from './Video/VideoPlayer';
+} from '../../features/player/playerSlice';
+import QueueCard from '../Queue/QueueCard';
+import VideoPlayer from '../Video/VideoPlayer';
 import ProgressBar from './ProgressBar';
 import Controls from './Controls';
+import { useNavigate } from 'react-router-dom';
+import VolumeControl from './VolumeControl ';
 
 const Player = () => {
 	const dispatch = useDispatch();
+	const navigate = useNavigate();
 	const {
 		playStatus,
 		currentTime,
@@ -26,6 +29,9 @@ const Player = () => {
 		playlist,
 		shuffle,
 		currentTrackIndex,
+		volume,
+		isMute,
+		manualSeek,
 	} = useSelector((state) => state.player);
 
 	const { user } = useSelector((state) => state.auth);
@@ -51,6 +57,16 @@ const Player = () => {
 		return `${minute}:${second < 10 ? `0${second}` : second}`;
 	};
 
+	useEffect(() => {
+		if (!mediaRef.current || !playlist[currentTrackIndex]) return;
+
+		const audio = mediaRef.current;
+		if (isMute) {
+			audio.volume = 0;
+			return;
+		}
+		audio.volume = volume / 100;
+	}, [volume, isMute]);
 	useEffect(() => {
 		dispatch(pause());
 	}, []);
@@ -78,8 +94,7 @@ const Player = () => {
 
 		const audio = mediaRef.current;
 		const newTime = currentTime.minute * 60 + currentTime.second;
-
-		if (isSeekingRef.current || isChangeTrack) {
+		if (isSeekingRef.current || isChangeTrack || manualSeek) {
 			audio.currentTime = newTime;
 			isSeekingRef.current = false;
 			setIsChangeTrack(false);
@@ -328,8 +343,17 @@ const Player = () => {
 					/>
 				</div>
 				<div className='hidden lg:flex items-center gap-y-2 gap-x-4 opacity-75'>
-					<img className='w-[16px] ' src={assets.play_icon} alt='play' />
-					{/* <img className='w-[16px] ' src={assets.mic_icon} alt='play' /> */}
+					{/* <img className='w-[16px] ' src={assets.play_icon} alt='play' /> */}
+					<img
+						onClick={() => {
+							if (location.pathname === '/lyrics') {
+								navigate(-1);
+							} else navigate('/lyrics');
+						}}
+						className='w-[16px] cursor-pointer '
+						src={assets.mic_icon}
+						alt='play'
+					/>
 					<img
 						onClick={handleShowQueue}
 						className='w-[16px] cursor-pointer '
@@ -337,10 +361,13 @@ const Player = () => {
 						alt='play'
 					/>
 					{/* <img className='w-[16px] ' src={assets.speaker_icon} alt='play' /> */}
-					<img className='w-[16px] ' src={assets.volume_icon} alt='play' />
-					<div className='w-30 bg-slate-50 h-[4px] rounded '></div>
+					{/* <img className='w-[16px] ' src={assets.volume_icon} alt='play' />
+					<div className='w-30 bg-slate-50 h-[4px] rounded '></div> */}
+					<VolumeControl />
+
 					{/* <img className='w-[16px] ' src={assets.mini_player_icon} alt='play' /> */}
-					<img className='w-[16px] ' src={assets.zoom_icon} alt='play' />
+
+					{/* <img className='w-[16px] ' src={assets.zoom_icon} alt='play' /> */}
 				</div>
 			</div>
 			{showQueue && (

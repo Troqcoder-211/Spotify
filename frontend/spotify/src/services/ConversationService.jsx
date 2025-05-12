@@ -20,7 +20,23 @@ const Conversation = {
         message: content,
       });
     });
-  }
+  },
+
+  chatWithGemini: async ({content}) => {
+    return await apiRequest(() => {
+      return api.post('/gemini/chat/', {
+        message: content,
+      });
+    });
+  },
+
+  chatForTrack: async ({content}) => {
+    return await apiRequest(() => {
+      return api.post('recommend-track/', {
+        text: content,
+      });
+    });
+  },
 };
 
 

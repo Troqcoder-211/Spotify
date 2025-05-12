@@ -40,33 +40,34 @@ const DisplayHome = () => {
 	return (
 		<>
 			<Navbar />
-
-			{/* Featured Charts */}
-			<div className='mb-4'>
-				<h1 className='my-5 font-bold text-2xl'>Featured Charts</h1>
-				<div className='flex overflow-auto'>
-					{albumsData.map((item, index) => {
-						return <AlbumItem key={index} props={item} />;
-					})}
+			<div className='h-[95%]'>
+				{/* Featured Charts */}
+				<div className='mb-4'>
+					<h1 className='my-5 font-bold text-2xl'>Featured Charts</h1>
+					<div className='flex overflow-auto'>
+						{albumsData.map((item, index) => {
+							return <AlbumItem key={index} props={item} />;
+						})}
+					</div>
 				</div>
-			</div>
-			{/* Today's biggest hits */}
-			<div className='mb-4'>
-				<h1 className='my-5 font-bold text-2xl'>Recommended for today</h1>
-				<div className='flex overflow-auto'>
-					{songs.map((item, index) => {
-						return <SongItem key={index} props={item} />;
-					})}
+				{/* Today's biggest hits */}
+				<div className='mb-4'>
+					<h1 className='my-5 font-bold text-2xl'>Recommended for today</h1>
+					<div className='flex overflow-auto'>
+						{songs.map((item, index) => {
+							return <SongItem key={index} props={item} />;
+						})}
+					</div>
 				</div>
-			</div>
 
-			{/* Popular artists */}
-			<div className='mb-4'>
-				<h1 className='my-5 font-bold text-2xl'>Nghệ sĩ phổ biến</h1>
-				<div className='flex overflow-auto'>
-					{artists.map((item, index) => {
-						return <SingerItem key={index} props={item} />;
-					})}
+				{/* Popular artists */}
+				<div className='mb-4'>
+					<h1 className='my-5 font-bold text-2xl'>Nghệ sĩ phổ biến</h1>
+					<div className='flex overflow-auto'>
+						{artists.map((item, index) => {
+							return <SingerItem key={index} props={item} />;
+						})}
+					</div>
 				</div>
 			</div>
 		</>

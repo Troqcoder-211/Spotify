@@ -1,5 +1,5 @@
 import React from 'react';
-import { assets } from '../assets/img/assets';
+import { assets } from '../../assets/img/assets';
 
 const Controls = ({
 	isPlaying,

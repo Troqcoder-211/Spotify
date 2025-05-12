@@ -11,6 +11,9 @@ const initialState = {
 	// Giá trị có thể là: "off" | "one" | "all"
 	repeatMode: 'off',
 	shuffleList: [],
+	volume: 100,
+	isMute: false,
+	manualSeek: false,
 };
 
 function createShuffledIndices(length) {
@@ -185,7 +188,9 @@ const playerSlice = createSlice({
 			if (state.playlist.length === 0) {
 				return;
 			}
-			state.currentTime = action.payload;
+			const { minute, second, manualSeek = false } = action.payload;
+			state.currentTime = { minute, second };
+			state.manualSeek = manualSeek;
 		},
 		//
 		setTotalTime: (state, action) => {
@@ -218,6 +223,18 @@ const playerSlice = createSlice({
 			state.currentTime = { minute: 0, second: 0 };
 			state.playStatus = true;
 		},
+		setVolume: (state, action) => {
+			state.volume = action.payload;
+			if (+action.payload == 0) {
+				state.isMute = true;
+			} else state.isMute = false;
+		},
+		setIsMute: (state, action) => {
+			state.isMute = action.payload;
+		},
+		setManualSeek: (state, action) => {
+			state.manualSeek = action.payload;
+		},
 	},
 });
 
@@ -235,5 +252,7 @@ export const {
 	clearPlayer,
 	setTotalTime,
 	playOne,
+	setVolume,
+	setIsMute,
 } = playerSlice.actions;
 export default playerSlice.reducer;
