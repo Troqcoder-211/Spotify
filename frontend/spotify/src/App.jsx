@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
 import AdminDashboard from './Pages/Admin/AdminDashboard';
 import Home from './Pages/Home/Home';
 import LoginPage from './Pages/Login/LoginPage';
@@ -11,19 +10,28 @@ import PaymentSuccess from './components/PaymentSuccess';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Unauthorized from './components/Unauthorized ';
+import PlaylistDetail from './components/PlaylistDetail';
+import MainLayout from './components/MainLayout';
+import PlayerContextProvider from './context/PlayerContext';
 
 function App() {
 	return (
-		<>
+		<PlayerContextProvider>
 			<Routes>
 				{/* Route công khai */}
 				<Route path='/login' element={<LoginPage />} />
 				<Route path='/register' element={<RegisterPage />} />
 				<Route path='/music' element={<MusicPlayer />} />
 				<Route path='/unauthorized' element={<Unauthorized />} />
-				<Route path='/*' element={<Home />} />
+				<Route path='/payment-success' element={<PaymentSuccess />} />
 
-				{/* Route bảo vệ (chỉ truy cập khi đã đăng nhập) */}
+				{/* Route sử dụng layout chính */}
+				<Route path='/*' element={<MainLayout />}>
+					<Route index element={<Home />} />
+					<Route path='playlist/:id' element={<PlaylistDetail />} />
+				</Route>
+
+				{/* Route bảo vệ */}
 				<Route
 					path='/admin'
 					element={
@@ -34,14 +42,10 @@ function App() {
 					}
 				/>
 
-				{/* Route cho trang callback thanh toán */}
-				{/* <Route path="/payment-callback" element={<PaymentCallback />} /> */}
-
-				<Route path='/payment-success' element={<PaymentSuccess />} />
-
 				{/* Route không tồn tại */}
 				<Route path='*' element={<NotFoundPage />} />
 			</Routes>
+
 			<ToastContainer
 				position='top-right'
 				autoClose={3000}
@@ -53,9 +57,8 @@ function App() {
 				draggable
 				pauseOnHover
 				theme='dark'
-				// "light" | "dark" | "colored"
 			/>
-		</>
+		</PlayerContextProvider>
 	);
 }
 

@@ -15,7 +15,7 @@ const Home = () => {
 			<div className='box-border'>
 				<div className='w-full h-screen bg-black relative'>
 					<div className='h-[90%] flex'>
-						<Sidebar />
+						{/* <Sidebar /> */}
 						<Display />
 						<FriendListeningSidebar />
 					</div>

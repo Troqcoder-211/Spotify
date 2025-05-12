@@ -74,6 +74,37 @@ const Sidebar = () => {
 	};
 
 	const navigate = useNavigate();
+
+	const handleCreatePlaylist = async () => {
+		try {
+			const newPlaylist = {
+				name: `Danh sách phát của tôi #${playlist.length + 1}`,
+				description: `Danh sách phát mới`,
+			};
+
+			const res = await PlaylistSerVice.createPlaylist(newPlaylist);
+
+			console.log('Dữ liệu trả về từ API:', res);
+
+			if (res.success && res.data) {
+				const newPlaylistWithId = {
+					...res.data,
+					id: res.data.playlist_id, // Gán id chuẩn từ playlist_id
+					name: `Danh sách phát của tôi #${res.data.playlist_id}`, // Sử dụng playlist_id để đặt tên
+				};
+
+				setPlaylist((prev) => [...prev, newPlaylistWithId]);
+				console.log("Giá trị playlistID đã chọn là: " + newPlaylistWithId.playlist_id);
+				navigate(`/playlist/${newPlaylistWithId.playlist_id}`);
+			} else {
+				console.error('Tạo playlist không thành công');
+			}
+		} catch (error) {
+			console.error('Lỗi khi tạo playlist:', error);
+		}
+	};
+
+
 	return (
 		<div className='w-[25%]  h-full  flex-col gap-2 text-white hidden lg:flex '>
 			<div className='bg-[#121212] h-[10%] rounded flex items-center justify-between gap-x-6'>
@@ -107,13 +138,12 @@ const Sidebar = () => {
 					{/*  Arrow and Plus */}
 					<div className='flex items-center gap-3 '>
 						<button
-							onClick={handleCreateFolder}
 							className='flex items-center gap-1 bg-[#1f1f1f] px-4 py-1.5 rounded-full hover:bg-[#2a2a2a]'
+							onClick={handleCreateFolder}
 						>
 							<img
-								className={`w-5 ${createFolder && 'rotate-45 duration-300'}  ${
-									!createFolder && 'rotate-[-45] duration-300'
-								} cursor-pointer`}
+								className={`w-5 ${createFolder && 'rotate-45 duration-300'}  ${!createFolder && 'rotate-[-45] duration-300'
+									} cursor-pointer`}
 								src={assets.plus_icon}
 								alt='ArrowIcon'
 							/>
@@ -134,7 +164,10 @@ const Sidebar = () => {
 					<div className='absolute translate-x-[50%] -translate-y-1/14 z-50'>
 						<div className='w-[348px] h-[140px] bg-[#282828] gap-2 p-2 rounded-xl'>
 							{/* Item choice */}
-							<div className='flex gap-2  items-center justify-start hover:bg-[#222222] hover:rounded-2xl p-2 '>
+							<div
+								className='flex gap-2 items-center justify-start hover:bg-[#222222] hover:rounded-2xl p-2'
+								onClick={handleCreatePlaylist} // Thêm sự kiện onClick vào đây
+							>
 								<div className='bg-[#6a6a6a] w-[48px] h-[48px] flex items-center justify-center rounded-full'>
 									<PiMusicNotesPlus className='w-8 h-8 hover:text-green-500' />
 								</div>
@@ -146,10 +179,13 @@ const Sidebar = () => {
 								</div>
 							</div>
 
+
 							<hr style={{ backgroundColor: 'hsla(0, 0%, 100%, .1)' }}></hr>
 
 							{/* Item choice */}
-							<div className='flex gap-2 items-center justify-start hover:bg-[#222222] hover:rounded-2xl p-2 '>
+							<div className='flex gap-2 items-center justify-start hover:bg-[#222222] hover:rounded-2xl p-2 '
+								onClick={handleCreatePlaylist}
+							>
 								<div className='bg-[#6a6a6a] w-[48px] h-[48px] flex items-center justify-center rounded-full '>
 									<AiOutlineFolder className='w-8 h-8 hover:text-green-500  ' />
 								</div>
@@ -203,7 +239,7 @@ const Sidebar = () => {
 
 				<div className='flex items-center justify-between'>
 					<button
-						onClick={() => {}}
+						onClick={() => { }}
 						className='mr-4 p-2 flex items-center justify-between hover:rounded-full hover:bg-[#2a2a2a]'
 					>
 						<AiOutlineSearch className='w-6 h-6' />
@@ -233,9 +269,16 @@ const Sidebar = () => {
 						{playlist.length === 0 ? (
 							<p>Không có playlist nào.</p>
 						) : (
-							playlist.map((list, index) => {
-								return <FolderMusic key={index} name={list.description} />;
-							})
+							playlist.map((list, index) => (
+								<FolderMusic
+									key={index}
+									name={list.name}
+									onClick={() => {
+										navigate(`/playlist/${list.id}`)
+									}
+									}
+								/>
+							))
 						)}
 
 						{/* {album.map((album, index) => (
