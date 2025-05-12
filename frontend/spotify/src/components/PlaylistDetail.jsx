@@ -17,15 +17,15 @@ const PlaylistDetail = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [addedTracks, setAddedTracks] = useState([]);
 
-
-    const getPlaylistDetail = async (playlistId) => {
+    const getPlaylistDetail = async () => {
         try {
-            const res = await PlaylistService.getPlaylistDetail(playlistId);
+            console.log("PlaylistId nhận được khi lấy Playlistdetail: " + id);
+            const res = await PlaylistService.getPlaylistDetail(id);
             if (res.success) {
                 setPlaylist(res.data);
                 setEditedCover(res.data.cover_img_url || '');
                 setEditedDescription(res.data.description || '');
-                getTracksByPlaylist(playlistId);
+                getTracksByPlaylist(id);
             }
         } catch (error) {
             console.error('Lỗi khi lấy chi tiết playlist:', error);

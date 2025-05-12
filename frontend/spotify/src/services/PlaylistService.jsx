@@ -3,7 +3,7 @@ import { apiRequest } from "../api/ApiRequest";
 import axios from 'axios';
 
 // 👉 Đặt token ở ngoài để dùng chung cho tất cả hàm
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDI2Njk0LCJpYXQiOjE3NDcwMjMwOTQsImp0aSI6ImQxMzgyOThhZDY5ZjRhM2ZiMzlhYWYzNDcwYmI4ODQzIiwidXNlcl9pZCI6MX0.f6JmaCcKSAQ5xYDWqf1m676oWx8YO22RrUvuCr2L6MI"
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDMxMjcwLCJpYXQiOjE3NDcwMjc2NzAsImp0aSI6ImJmNGQzMWYwMTA5YzRiZWNiNGI1ZmU3ODBmMmY0ZTE3IiwidXNlcl9pZCI6MX0.F84vCo2eoB0QzLAkB8I6Avo5FY-jasJevNfZL1tJCiM"
 const authHeaders = {
   Authorization: `Bearer ${token}`,
 };

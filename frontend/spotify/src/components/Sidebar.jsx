@@ -84,18 +84,10 @@ const Sidebar = () => {
 
 			const res = await PlaylistSerVice.createPlaylist(newPlaylist);
 
-			console.log('Dữ liệu trả về từ API:', res);
-
 			if (res.success && res.data) {
-				const newPlaylistWithId = {
-					...res.data,
-					id: res.data.playlist_id, // Gán id chuẩn từ playlist_id
-					name: `Danh sách phát của tôi #${res.data.playlist_id}`, // Sử dụng playlist_id để đặt tên
-				};
-
-				setPlaylist((prev) => [...prev, newPlaylistWithId]);
-				console.log("Giá trị playlistID đã chọn là: " + newPlaylistWithId.playlist_id);
-				navigate(`/playlist/${newPlaylistWithId.playlist_id}`);
+				setPlaylist((prev) => [...prev, res.data]);
+				console.log('Dữ liệu khi tạo playlist thành công: ', res);
+				navigate(`/playlist/${res.data.playlist_id}`);
 			} else {
 				console.error('Tạo playlist không thành công');
 			}
