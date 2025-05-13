@@ -1,12 +1,37 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addTrack } from '../features/player/playerSlice';
-import ArtistTrackService from '../services/ArtistTrackService';
-
-const SongItem = ({ props }) => {
+import { assets } from '../assets/img/assets';
+import LikeTrackService from '../services/LikeTrackService';
+import { toast } from 'react-toastify';
+import _ from 'lodash';
+const SongItem = ({ props, likedSongs, setLikedSongs }) => {
 	const dispatch = useDispatch();
+	const { user } = useSelector((state) => state.auth);
 	const handleClick = () => {
 		dispatch(addTrack(props));
+	};
+	const handleLikeTrack = async (e, track_id) => {
+		e.stopPropagation();
+		const res = await LikeTrackService.userLikeTrack(user.id, track_id);
+		if (res.success) {
+			toast.success('Liked!');
+			const likedSongsClone = _.cloneDeep(likedSongs);
+			likedSongsClone.push(res.data);
+			console.log('>>nghi like', likedSongsClone);
+			setLikedSongs([...likedSongsClone]);
+		}
+	};
+	const handleUnLikeTrack = async (e, track_id) => {
+		e.stopPropagation();
+		const res = await LikeTrackService.unlikeTrack(user.id, track_id);
+		if (res.success) {
+			toast.success('Unliked!');
+			const likedSongsClone = _.cloneDeep(likedSongs);
+			const rs = likedSongsClone.filter((s) => s.track !== track_id);
+			console.log('>>nghi xoas', rs);
+			setLikedSongs([...rs]);
+		}
 	};
 
 	return (
@@ -31,6 +56,23 @@ const SongItem = ({ props }) => {
 					{props.artists.map((a) => a?.name).join(',') ||
 						'[Nghệ sĩ A, Nghệ sĩ B]'}
 				</p>
+			</div>
+			<div className='text-left w-full mt-2'>
+				{likedSongs &&
+				likedSongs.length > 0 &&
+				likedSongs.some((s) => s.track === props.track_id) ? (
+					<img
+						src={assets.heart_e}
+						alt=''
+						onClick={(e) => handleUnLikeTrack(e, props.track_id)}
+					/>
+				) : (
+					<img
+						src={assets.heart}
+						alt=''
+						onClick={(e) => handleLikeTrack(e, props.track_id)}
+					/>
+				)}
 			</div>
 		</div>
 	);

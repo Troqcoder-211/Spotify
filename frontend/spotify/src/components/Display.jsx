@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import DisplayHome from './DisplayHome';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import DisplayAlbum from './DisplayAlbum';
-import { albumsData } from '../assets/img/assets';
 import ChatPage from '../Pages/Chat/ChatPage';
 import PremiumOfferSection from './PremiumOfferSection';
 import Lyrics from './Lyrics/Lyrics';
@@ -14,9 +13,8 @@ const Display = () => {
 
 	const isAlbum = location.pathname.includes('album');
 
-	const albumId = isAlbum ? location.pathname.slice(-1) : '';
-
-	const bgColor = albumsData[Number(albumId)].bgColor;
+	// const bgColor = albumsData.find((a) => +a.id === +id).bgColor;
+	const bgColor = '#2a4365';
 
 	useEffect(() => {
 		displayRef.current.style.background = isAlbum

@@ -32,6 +32,12 @@ const TrackService = {
 		);
 	},
 
+	increasePopularity: async (trackId) => {
+		return await apiRequest(() =>
+			api.put(`/tracks/${trackId}/increase-popularity/`)
+		);
+	},
+
 	// Thêm track mới
 	add: async (formData) => {
 		// Log formData để debug

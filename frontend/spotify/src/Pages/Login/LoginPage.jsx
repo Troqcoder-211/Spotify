@@ -55,7 +55,7 @@ export default function LoginPage() {
 					<hr className='flex-grow border-gray-700' />
 				</div>
 				<input
-					type={email === 'admin' ? 'text' : 'email'}
+					type='email'
 					placeholder='Email hoặc tên người dùng'
 					className='w-full p-2 mb-4 bg-gray-800 rounded border border-gray-600 focus:outline-none'
 					value={email}
