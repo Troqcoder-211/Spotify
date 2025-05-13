@@ -187,7 +187,15 @@ const ChatPage = () => {
 					};
 					setMessages((prev) => [...prev, aiReply]);
 				} else {
-				console.error('Lỗi phản hồi AI:', aiResponse?.message);
+					console.error('Lỗi phản hồi AI:', aiResponse?.message);
+					const aiReply = {
+					_id: Date.now().toString() + '_ai_error',
+					senderId: selectedUser.clerkId.toString(),
+					content: aiResponse?.message || aiResponse?.error || 'Xin lỗi, không thể xử lý yêu cầu của bạn.',
+					createdAt: new Date().toISOString(),
+					senderName: selectedUser.fullName,
+				};
+				setMessages((prev) => [...prev, aiReply]);
 				}
 			} catch (err) {
 				console.error('Lỗi khi gọi AI:', err);

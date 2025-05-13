@@ -14,6 +14,7 @@ const initialState = {
 	volume: 100,
 	isMute: false,
 	manualSeek: false,
+	isEnded: false,
 };
 
 function createShuffledIndices(length) {
@@ -41,6 +42,10 @@ const playerSlice = createSlice({
 			state.totalTime = { minute: 0, second: 0 };
 			state.shuffle = false;
 			state.repeatMode = 'off';
+			state.volume = 100;
+			state.isMute = false;
+			state.manualSeek = false;
+			state.isEnded = false;
 		},
 		// Chức năng tiếp tục phát
 		play: (state) => {
@@ -183,6 +188,9 @@ const playerSlice = createSlice({
 				second: durationInSec % 60,
 			};
 		},
+		setIsEnded: (state, action) => {
+			state.isEnded = action.payload;
+		},
 		// Tua bài hát
 		setCurrentTime: (state, action) => {
 			if (state.playlist.length === 0) {
@@ -254,5 +262,6 @@ export const {
 	playOne,
 	setVolume,
 	setIsMute,
+	setIsEnded,
 } = playerSlice.actions;
 export default playerSlice.reducer;
