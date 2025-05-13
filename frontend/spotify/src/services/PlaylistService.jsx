@@ -2,26 +2,18 @@ import api from "../api/axios";
 import { apiRequest } from "../api/ApiRequest";
 import axios from 'axios';
 
-// 👉 Đặt token ở ngoài để dùng chung cho tất cả hàm
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3MDMxMjcwLCJpYXQiOjE3NDcwMjc2NzAsImp0aSI6ImJmNGQzMWYwMTA5YzRiZWNiNGI1ZmU3ODBmMmY0ZTE3IiwidXNlcl9pZCI6MX0.F84vCo2eoB0QzLAkB8I6Avo5FY-jasJevNfZL1tJCiM"
-const authHeaders = {
-  Authorization: `Bearer ${token}`,
-};
+
 
 const PlaylistService = {
   getAllPlayLists: async () => {
     return await apiRequest(() => {
-      return api.get("/playlists/", {
-        headers: authHeaders,
-      });
+      return api.get("/playlists/");
     });
   },
 
   createPlaylist: async (newPlaylist) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/playlists/', newPlaylist, {
-        headers: authHeaders,
-      });
+      const response = await axios.post('http://localhost:8000/api/playlists/', newPlaylist);
 
       const normalizedData = {
         ...response.data.data,
