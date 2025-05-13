@@ -10,6 +10,7 @@ import {
 	setRepeatMode,
 	setShuffle,
 	nextTrackNoRepeat,
+	setIsEnded,
 } from '../../features/player/playerSlice';
 import QueueCard from '../Queue/QueueCard';
 import VideoPlayer from '../Video/VideoPlayer';
@@ -17,7 +18,9 @@ import ProgressBar from './ProgressBar';
 import Controls from './Controls';
 import { useNavigate } from 'react-router-dom';
 import VolumeControl from './VolumeControl ';
-
+import LikeTrackService from '../../services/LikeTrackService';
+import { toast } from 'react-toastify';
+import _ from 'lodash';
 const Player = () => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
@@ -106,6 +109,7 @@ const Player = () => {
 		if (!mediaElement) return;
 
 		const handleEnded = () => {
+			setIsEnded(true);
 			const song = playlist[currentTrackIndex];
 			if (!song?.preview_url) {
 				setAudioSrc(song.file_path);
@@ -123,7 +127,7 @@ const Player = () => {
 				};
 				mediaElement.addEventListener('canplaythrough', onAudioCanPlay);
 
-				return;
+				// return;
 			}
 			switch (repeatMode) {
 				case 'one':
@@ -131,6 +135,7 @@ const Player = () => {
 						mediaElement.play();
 					}
 					dispatch(setCurrentTime({ minute: 0, second: 0 }));
+					dispatch(setIsEnded(false));
 
 					return;
 				case 'all':
@@ -138,9 +143,12 @@ const Player = () => {
 						mediaElement.play();
 					}
 					dispatch(nextTrack());
+					dispatch(setIsEnded(false));
+
 					return;
 				default:
 					dispatch(nextTrackNoRepeat());
+					dispatch(setIsEnded(false));
 					return;
 			}
 		};
@@ -274,7 +282,39 @@ const Player = () => {
 	const handleShowQueue = () => {
 		setShowQueue(!showQueue);
 	};
+	const [likedSongs, setLikedSongs] = useState([]);
+	const getSongLike = async (userId) => {
+		const res = await LikeTrackService.getByUser(userId);
+		if (res.success) {
+			setLikedSongs(res.data);
+		} else {
+			setLikedSongs([]);
+		}
+	};
 
+	const handleLikeTrack = async (e, track_id) => {
+		e.stopPropagation();
+		const res = await LikeTrackService.userLikeTrack(user.id, track_id);
+		if (res.success) {
+			toast.success('Liked!');
+			const likedSongsClone = _.cloneDeep(likedSongs);
+			likedSongsClone.push(res.data);
+			setLikedSongs([...likedSongsClone]);
+		}
+	};
+	const handleUnLikeTrack = async (e, track_id) => {
+		e.stopPropagation();
+		const res = await LikeTrackService.unlikeTrack(user.id, track_id);
+		if (res.success) {
+			toast.success('Unliked!');
+			const likedSongsClone = _.cloneDeep(likedSongs);
+			const rs = likedSongsClone.filter((s) => s.track !== track_id);
+			setLikedSongs([...rs]);
+		}
+	};
+	useEffect(() => {
+		getSongLike(user.id);
+	}, []);
 	//
 	return (
 		<div className='flex h-[10%] flex-col justify-center'>
@@ -343,6 +383,29 @@ const Player = () => {
 					/>
 				</div>
 				<div className='hidden lg:flex items-center gap-y-2 gap-x-4 opacity-75'>
+					{likedSongs &&
+					likedSongs.length > 0 &&
+					likedSongs.some(
+						(s) => s.track === playlist[currentTrackIndex].track_id
+					) ? (
+						<img
+							src={assets.heart_e}
+							alt=''
+							className='w-5 h-5 object-cover cursor-pointer'
+							onClick={(e) =>
+								handleUnLikeTrack(e, playlist[currentTrackIndex].track_id)
+							}
+						/>
+					) : (
+						<img
+							src={assets.heart}
+							alt=''
+							className='w-5 h-5 object-cover cursor-pointer'
+							onClick={(e) =>
+								handleLikeTrack(e, playlist[currentTrackIndex].track_id)
+							}
+						/>
+					)}
 					{/* <img className='w-[16px] ' src={assets.play_icon} alt='play' /> */}
 					<img
 						onClick={() => {

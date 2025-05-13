@@ -28,6 +28,8 @@ import spotify_logo from './spotify_logo.png';
 import clock_icon from './clock_icon.png';
 import hide_vid from './hide_vid.png';
 import show_vid from './show_vid.png';
+import heart from './heart.png';
+import heart_e from './heart_e.png';
 import mute from './mute.png';
 import vnpay from './vnpay.jpg';
 import img1 from './img1.jpg';
@@ -86,18 +88,20 @@ export const assets = {
 	vnpay,
 	mute,
 	hide_vid,
+	heart,
+	heart_e,
 };
 
 export const albumsData = [
 	{
-		id: 0,
+		id: 17,
 		name: 'Top 50 Global',
 		image: img8,
 		desc: 'Your weekly update of the most played tracks',
 		bgColor: '#2a4365',
 	},
 	{
-		id: 1,
+		id: 18,
 		name: 'Top 50 India',
 		image: img9,
 		desc: 'Your weekly update of the most played tracks',
