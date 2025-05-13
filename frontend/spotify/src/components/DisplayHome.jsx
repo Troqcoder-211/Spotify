@@ -34,7 +34,7 @@ const DisplayHome = () => {
 	const [songs, setSongs] = useState([]);
 
 	const getAllSongs = async () => {
-		const res = await TrackService.getRecommended(10);
+		const res = await TrackService.getRecommended(30);
 		if (res.success) {
 			setSongs(res.data);
 		} else {
@@ -56,7 +56,7 @@ const DisplayHome = () => {
 		getAllSongs();
 		getAllArtists();
 		getAllAlbums();
-		getSongLike(user.id);
+		getSongLike(user?.id);
 	}, []);
 	return (
 		<>

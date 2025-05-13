@@ -386,7 +386,7 @@ const Player = () => {
 					{likedSongs &&
 					likedSongs.length > 0 &&
 					likedSongs.some(
-						(s) => s.track === playlist[currentTrackIndex].track_id
+						(s) => s.track === playlist[currentTrackIndex]?.track_id
 					) ? (
 						<img
 							src={assets.heart_e}
