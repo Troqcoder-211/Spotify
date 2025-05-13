@@ -37,10 +37,16 @@ const SongItem = ({ props, likedSongs, setLikedSongs }) => {
 	return (
 		<div
 			onClick={handleClick}
-			className='min-w-[200px] w-[200px] h-[260px] transition-all duration-150 p-3 rounded-lg bg-[#1e1e1e] cursor-pointer hover:bg-[#ffffff26] flex flex-col items-center mr-3'
+			className={`min-w-[200px] w-[200px] h-[260px] transition-all duration-150 p-3 rounded-lg  cursor-pointer  flex flex-col items-center mr-3 
+			${
+				props?.preview_url && user.account_type === 'free'
+					? 'bg-[#a58701]'
+					: 'bg-[#1e1e1e] hover:bg-[#ffffff26]'
+			}
+			 `}
 		>
 			<img
-				className='w-full h-[160px] rounded object-cover'
+				className='w-full h-[160px] rounded object-cover flex-1'
 				src={props.img_path || import.meta.env.VITE_IMG_DEFAULT}
 				alt={props.title}
 			/>
@@ -52,7 +58,16 @@ const SongItem = ({ props, likedSongs, setLikedSongs }) => {
 						.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 						.join(' ')}
 				</p>
-				<p className='text-slate-400 text-[13px] truncate text-left'>
+				<p
+					className={` text-[13px] truncate text-left
+					
+					${
+						props?.preview_url && user.account_type === 'free'
+							? 'text-white'
+							: 'text-slate-400'
+					}
+					`}
+				>
 					{props.artists.map((a) => a?.name).join(',') ||
 						'[Nghệ sĩ A, Nghệ sĩ B]'}
 				</p>
